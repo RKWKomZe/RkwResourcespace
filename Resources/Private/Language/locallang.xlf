@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2018-07-27T11:14:29Z" product-name="rkw_resourcespace">
+		<header/>
+		<body>
+			<trans-unit id="tx_rkw_resourcespace_domain_model_import">
+				<source>Import</source>
+			</trans-unit>
+			<trans-unit id="tx_rkw_resourcespace_domain_model_import.description">
+				<source>Import images from "ResourceSpace" (rkwmedia.rkw.de)</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_domain_model_import">
+				<source>Import</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_domain_model_import.resource_space_image_id">
+				<source>ID of resource space image</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_domain_model_import.resource_space_user_id">
+				<source>ID of resource space user</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_domain_model_import.resource_space_user_name">
+				<source>User name of resource space user</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_domain_model_import.resource_space_user_real_name">
+				<source>Real name of resource space user</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_domain_model_import.file">
+				<source>File</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_domain_model_import.backend_user">
+				<source>Backend user</source>
+			</trans-unit>
+
+
+
+			<!-- CONTROLLER -->
+			<trans-unit id="tx_rkwresourcespace_controller_import.invalidIp">
+				<source>Access denied. Invalid IP!</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_controller_import.noImageFound">
+				<source>No image found!</source>
+			</trans-unit>
+
+
+
+			<!-- HELPER -->
+			<trans-unit id="tx_rkwresourcespace_helper_file.fileCopyFailed">
+				<source>File copy failed!</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_helper_file.fileAlreadyExists">
+				<source>This file already exists!</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_helper_file.fileCreated">
+				<source>Success: File created!</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_helper_file.errorMisconfiguration">
+				<source>The RkwResourcespace Extension seems misconfigured. Show extension log for further information.</source>
+			</trans-unit>
+
+
+
+			<!-- TEMPLATES -->
+			<trans-unit id="tx_rkwresourcespace_templates_new.header">
+				<source>RKW ResourceSpace: Import</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_templates_new.backendLogin">
+				<source>You have to login in backend to use this service!</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_partial_form_fields.placeholder">
+				<source>ResourceSpace Image ID</source>
+			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_partial_form_fields.import">
+				<source>Import</source>
+			</trans-unit>
+
+
+		</body>
+	</file>
+</xliff>

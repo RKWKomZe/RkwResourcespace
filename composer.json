@@ -1,0 +1,33 @@
+{
+    "name": "rkw/rkw-resourcespace",
+    "type": "typo3-cms-extension",
+    "description": "Extension for connection to Resourcespace",
+    "homepage": "https://www.rkw-kompetenzzentrum.de",
+    "license": ["GPL-2.0+"],
+    "keywords": ["TYPO3 CMS", "RKW", "Resourcespace"],
+    "support": {
+        "email": "developer@steffenkroggel.de"
+    },
+    "authors": [
+        {
+            "name": "Maximilian Fäßler",
+            "email": "maximilian@faesslerweb.de",
+            "homepage": "https://www.faesslerweb.de",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "typo3/cms-core": "^7.6.0 || ^8.7.0",
+        "rkw/rkw-basics": "~7.6.12",
+    },
+    "autoload": {
+        "psr-4": {
+            "RKW\\Resourcespace\\": "Classes/"
+        }
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "rkw_resourcespace"
+        }
+    }
+}

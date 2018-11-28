@@ -1,0 +1,41 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+<f:layout name="Default" />
+
+This template displays a NEW form for the current domain object.
+
+If you modify this template, do not forget to change the overwrite settings
+in /Configuration/ExtensionBuilder/settings.yaml:
+  Resources:
+    Private:
+      Templates:
+        New.html: keep
+
+Otherwise your changes will be overwritten the next time you save the extension in the extension builder
+
+	<f:section name="main">
+
+        <f:flashMessages renderMode="div" />
+
+		<f:form noCache="true" action="create" name="newImport" object="{newImport}">
+			<f:if condition="{settings.enableFormUpload}">
+					<f:if condition="{settings.backendLoginIsMandatory}">
+						<f:then>
+							<f:be.security.ifAuthenticated>
+								<f:then>
+									<f:render partial="Import/FormFields" />
+								</f:then>
+								<f:else>
+									<f:translate key='tx_rkwresourcespace_templates_new.backendLogin' />
+								</f:else>
+							</f:be.security.ifAuthenticated>
+						</f:then>
+						<f:else>
+							<f:render partial="Import/FormFields" />
+						</f:else>
+					</f:if>
+			</f:if>
+		</f:form>
+
+
+	</f:section>
+</html>
