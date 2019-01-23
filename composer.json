@@ -22,7 +22,7 @@
     },
     "autoload": {
         "psr-4": {
-            "RKW\\Resourcespace\\": "Classes/"
+            "RKW\\RkwResourcespace\\": "Classes/"
         }
     },
     "extra": {
