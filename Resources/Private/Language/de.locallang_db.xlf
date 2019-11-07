@@ -4,11 +4,11 @@
 		<header/>
 		<body>
 			<!-- MODEL -->
-			<trans-unit id="tx_rkw_resourcespace_domain_model_import">
+			<trans-unit id="tx_rkwresourcespace_domain_model_import">
 				<source>RKW Resourcespace: Import</source>
 				<target>RKW Resourcespace: Import</target>
 			</trans-unit>
-			<trans-unit id="tx_rkw_resourcespace_domain_model_import.description">
+			<trans-unit id="tx_rkwresourcespace_domain_model_import.description">
 				<source>Import images from "ResourceSpace" (rkwmedia.rkw.de) to Typo3</source>
 				<target>Importiert Bilder vom "ResourceSpace" (rkwmedia.rkw.de) zu Typo3</target>
 			</trans-unit>

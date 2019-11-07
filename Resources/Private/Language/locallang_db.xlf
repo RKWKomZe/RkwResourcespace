@@ -3,10 +3,10 @@
 	<file source-language="en" datatype="plaintext" original="messages" date="2018-07-27T11:14:29Z" product-name="rkw_resourcespace">
 		<header/>
 		<body>
-			<trans-unit id="tx_rkw_resourcespace_domain_model_import">
+			<trans-unit id="tx_rkwresourcespace_domain_model_import">
 				<source>RKW Resourcespace: Import</source>
 			</trans-unit>
-			<trans-unit id="tx_rkw_resourcespace_domain_model_import.description">
+			<trans-unit id="tx_rkwresourcespace_domain_model_import.description">
 				<source>Import images from "ResourceSpace" (rkwmedia.rkw.de)</source>
 			</trans-unit>
 			<trans-unit id="tx_rkwresourcespace_domain_model_import.resource_space_image_id">
