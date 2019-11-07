@@ -5,6 +5,9 @@ call_user_func(
     function($extKey)
 	{
 
+        //=================================================================
+        // Configure Plugin
+        //=================================================================
         \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
             'RKW.RkwResourcespace',
             'Import',
@@ -17,30 +20,11 @@ call_user_func(
             ]
         );
 
-		// wizards
-        /*
-		\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig(
-			'mod {
-				wizards.newContentElement.wizardItems.plugins {
-					elements {
-						import {
-							icon = ' . \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath($extKey) . 'Resources/Public/Icons/user_plugin_import.svg
-							title = LLL:EXT:rkw_resourcespace/Resources/Private/Language/locallang_db.xlf:tx_rkw_resourcespace_domain_model_import
-							description = LLL:EXT:rkw_resourcespace/Resources/Private/Language/locallang_db.xlf:tx_rkw_resourcespace_domain_model_import.description
-							tt_content_defValues {
-								CType = list
-								list_type = rkwresourcespace_import
-							}
-						}
-					}
-					show = *
-				}
-		   }'
-		);
-        */
 
-		// set logger
-		$GLOBALS['TYPO3_CONF_VARS']['LOG']['RKW']['RkwResourcespace']['writerConfiguration'] = array(
+        //=================================================================
+        // Register Logger
+        //=================================================================
+		$GLOBALS['TYPO3_CONF_VARS']['LOG']['RKW'][$extKey]['writerConfiguration'] = array(
 
 			// configuration for WARNING severity, including all
 			// levels with higher severity (ERROR, CRITICAL, EMERGENCY)
