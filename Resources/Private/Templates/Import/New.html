@@ -14,7 +14,7 @@ Otherwise your changes will be overwritten the next time you save the extension 
 
 	<f:section name="main">
 
-        <f:flashMessages renderMode="div" />
+		<f:render partial="FlashMessages" arguments="{_all}" />
 
 		<f:form noCache="true" action="create" name="newImport" object="{newImport}">
 			<f:if condition="{settings.enableFormUpload}">
