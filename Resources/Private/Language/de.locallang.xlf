@@ -66,7 +66,7 @@
 			</trans-unit>
 			<trans-unit id="tx_rkwresourcespace_helper_file.fileCreated">
 				<source>Success: File created!</source>
-				<target>Wohooo! Das Bild wurde erfolgreich übertragen. Bitte prüfen Sie vor der Verwendung des Bildes in TYPO3, ob die Urheberangaben korrekt übertragen wurden.</target>
+				<target>Wohoo! Das Bild wurde erfolgreich übertragen. Bitte prüfen Sie vor der Verwendung des Bildes in TYPO3, ob die Urheberangaben korrekt übertragen wurden.</target>
 			</trans-unit>
 			<trans-unit id="tx_rkwresourcespace_helper_file.errorMisconfiguration">
 				<source>The RkwResourcespace Extension seems misconfigured. Show extension log for further information.</source>
