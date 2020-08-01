@@ -4,6 +4,8 @@ namespace RKW\RkwResourcespace\Api;
 
 use \RKW\RkwBasics\Helper\Common;
 use \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -56,6 +58,13 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
     protected $streamContext;
 
     /**
+     * logger
+     *
+     * @var \TYPO3\CMS\Core\Log\Logger
+     */
+    protected $logger;
+
+    /**
      * initializeObject
      *
      * @return void
@@ -92,6 +101,7 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
             }
             $opts = array_merge_recursive($opts, $optsProxy);
         }
+
         $this->streamContext = stream_context_create($opts);
     }
 
@@ -123,8 +133,13 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
         $query = "user=" . $this->apiUser . "&function=get_resource_path&param1=" . $resourceSpaceImageId . "&param2=&param3=&param4=1&param5=&param6=&param7&param8=";
         $sign = hash("sha256", $this->apiPrivateKey . $query);
 
-        return json_decode(file_get_contents($this->apiBaseUrl . "?" . $query . "&sign=" . $sign, false, $this->streamContext));
-        //===
+        try {
+            return json_decode(file_get_contents($this->apiBaseUrl . "?" . $query . "&sign=" . $sign, false, $this->streamContext));
+            //===
+        } catch (\Exception $e) {
+            $this->getLogger()->log(\TYPO3\CMS\Core\Log\LogLevel::ERROR, sprintf('Error while try to get image resource path: %s', $e->getMessage()));
+        }
+        return '';
     }
 
 
@@ -133,21 +148,31 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
      * (returns basic file information like name, file extension etc)
      *
      * @param integer $resourceSpaceImageId
-     * @return \StdClass
+     * @return \stdClass
      */
     public function getResourceData($resourceSpaceImageId)
     {
         // create search query
         $query = "user=" . $this->apiUser . "&function=get_resource_data&param1=" . $resourceSpaceImageId;
         $sign = hash("sha256", $this->apiPrivateKey . $query);
-        $data = json_decode(file_get_contents($this->apiBaseUrl . "?" . $query . "&sign=" . $sign, false, $this->streamContext));
 
-        // fix for foxy
-        if (!$data->file_checksum) {
-            $data->file_checksum = sha1($data->ref);
+
+        try {
+            $data = json_decode(file_get_contents($this->apiBaseUrl . "?" . $query . "&sign=" . $sign, false, $this->streamContext));
+            // fix for foxy
+            if (!$data->file_checksum) {
+                $data->file_checksum = sha1($data->ref);
+            }
+
+            return $data;
+            //===
+
+
+        } catch (\Exception $e) {
+            $this->getLogger()->log(\TYPO3\CMS\Core\Log\LogLevel::ERROR, sprintf('Error while try to get image resource data: %s', $e->getMessage()));
         }
 
-        return $data;
+        return new \stdClass();
         //===
     }
 
@@ -165,7 +190,31 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
         $query = "user=" . $this->apiUser . "&function=get_resource_field_data&param1=" . $resourceSpaceImageId;
         $sign = hash("sha256", $this->apiPrivateKey . $query);
 
-        return json_decode(file_get_contents($this->apiBaseUrl . "?" . $query . "&sign=" . $sign, false, $this->streamContext));
+        try {
+            return json_decode(file_get_contents($this->apiBaseUrl . "?" . $query . "&sign=" . $sign, false, $this->streamContext));
+            //===
+        } catch (\Exception $e) {
+            $this->getLogger()->log(\TYPO3\CMS\Core\Log\LogLevel::ERROR, sprintf('Error while try to get image resource field data: %s', $e->getMessage()));
+        }
+
+        return [];
+        //===
+    }
+
+
+
+    /**
+     * Returns logger instance
+     *
+     * @return \TYPO3\CMS\Core\Log\Logger
+     */
+    protected function getLogger()
+    {
+        if (!$this->logger instanceof \TYPO3\CMS\Core\Log\Logger) {
+            $this->logger = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Log\\LogManager')->getLogger(__CLASS__);
+        }
+
+        return $this->logger;
         //===
     }
 }
