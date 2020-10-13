@@ -124,13 +124,14 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
      * (returns image-url)
      *
      * @param integer $resourceSpaceImageId
+     * @param string $file_extension
      * @return string
      */
-    public function getResourcePath($resourceSpaceImageId)
+    public function getResourcePath($resourceSpaceImageId, $file_extension = 'jpg')
     {
         // create search query
         // Hint: without that empty "param2" - "param8" arguments the query will fail
-        $query = "user=" . $this->apiUser . "&function=get_resource_path&param1=" . $resourceSpaceImageId . "&param2=&param3=&param4=1&param5=&param6=&param7&param8=";
+        $query = "user=" . $this->apiUser . "&function=get_resource_path&param1=" . $resourceSpaceImageId . "&param2=0&param3=&param4=1&param5=" . $file_extension . "&param6=&param7&param8=";
         $sign = hash("sha256", $this->apiPrivateKey . $query);
 
         try {

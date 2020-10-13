@@ -122,10 +122,13 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
         /** @var \RKW\RkwResourcespace\Api\ResourceSpace $resourceSpaceApi */
         $resourceSpaceApi = $this->objectManager->get('RKW\\RkwResourcespace\\Api\\ResourceSpace');
-        // get resource path (url of image)
-        $resourcePathOfImage = $resourceSpaceApi->getResourcePath($newImport->getResourceSpaceImageId());
+
         // get resource data (like name, file extension etc)
         $resourceData = $resourceSpaceApi->getResourceData($newImport->getResourceSpaceImageId());
+
+        // get resource path (url of image)
+        $resourcePathOfImage = $resourceSpaceApi->getResourcePath($newImport->getResourceSpaceImageId(), $resourceData->file_extension);
+
         // get resource metadata
         $resourceMetaData = $resourceSpaceApi->getResourceFieldData($newImport->getResourceSpaceImageId());
 
