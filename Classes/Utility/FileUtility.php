@@ -1,12 +1,13 @@
 <?php
 
-namespace RKW\RkwResourcespace\Helper;
+namespace RKW\RkwResourcespace\Utility;
 
 use PhpParser\Error;
 use \RKW\RkwBasics\Helper\Common;
 use \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use \TYPO3\CMS\Core\Utility\GeneralUtility;
 use \TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -29,7 +30,7 @@ use \TYPO3\CMS\Core\Resource\ResourceFactory;
  * @package RKW_Resourcespace
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
  */
-class File implements \TYPO3\CMS\Core\SingletonInterface
+class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
 {
     /**
      * fileName
@@ -160,12 +161,16 @@ class File implements \TYPO3\CMS\Core\SingletonInterface
             );
 
             // return message
-            return \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('tx_rkwresourcespace_helper_file.fileCopyFailed', 'rkw_resourcespace');
+            return LocalizationUtility::translate('tx_rkwresourcespace_helper_file.fileCopyFailed', 'rkw_resourcespace');
             //===
         }
 
         // copy image
-        copy($finalImageUrl, $this->settingsDefault['localBufferDestination'] . $resourceData->file_checksum);
+        try {
+            copy($finalImageUrl, $this->settingsDefault['localBufferDestination'] . $resourceData->file_checksum);
+        } catch (\Exception $e) {
+            $this->getLogger()->log(\TYPO3\CMS\Core\Log\LogLevel::ERROR, sprintf('Error while try to copy the image: %s', $e->getMessage()));
+        }
 
         /** @var \TYPO3\CMS\Core\Resource\ResourceStorage $storage */
         $resourceFactory = ResourceFactory::getInstance();
@@ -200,7 +205,7 @@ class File implements \TYPO3\CMS\Core\SingletonInterface
                 );
 
                 // return message
-                return \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('tx_rkwresourcespace_helper_file.fileAlreadyExists', 'rkw_resourcespace');
+                return LocalizationUtility::translate('tx_rkwresourcespace_helper_file.fileAlreadyExists', 'rkw_resourcespace');
                 //===
             }
 
@@ -209,47 +214,61 @@ class File implements \TYPO3\CMS\Core\SingletonInterface
             // process image (if enabled)
             if ($this->settingsDefault['upload']['processing']) {
                 // resize image if maxWidth is defined
-                $imageSize = getimagesize($this->tempName);
-                if (
-                    $this->settingsDefault['upload']['processing']['maxWidth']
-                    && $imageSize[0] > $this->settingsDefault['upload']['processing']['maxWidth']
-                ) {
-                    // resize image
-                    $newTmpName = $this->resizeImage();
-                    if ($newTmpName) {
-                        $this->tempName = $newTmpName;
+                try {
+                    $imageSize = getimagesize($this->tempName);
+                    if (
+                        $this->settingsDefault['upload']['processing']['maxWidth']
+                        && $imageSize[0] > $this->settingsDefault['upload']['processing']['maxWidth']
+                    ) {
+                        // resize image
+                        $newTmpName = $this->resizeImage();
+                        if ($newTmpName) {
+                            $this->tempName = $newTmpName;
+                        }
                     }
+                } catch (\Exception $e) {
+                    $this->getLogger()->log(\TYPO3\CMS\Core\Log\LogLevel::ERROR, sprintf('Error while try to get the image size: %s', $e->getMessage()));
+                    // return message
+                    return LocalizationUtility::translate('tx_rkwresourcespace_helper_file.fileCreated', 'rkw_resourcespace');
+                    //===
                 }
             }
 
-            /** @var \TYPO3\CMS\Core\Resource\File $newFileObject */
-            $newFileObject = $storage->addFile($this->tempName, $storage->getFolder($this->settingsDefault['uploadDestination']), $this->fileName);
+            try {
+                /** @var \TYPO3\CMS\Core\Resource\File $newFileObject */
+                $newFileObject = $storage->addFile($this->tempName, $storage->getFolder($this->settingsDefault['uploadDestination']), $this->fileName);
 
-            /** @var \RKW\RkwResourcespace\Domain\Model\File $newFile */
-            // Important: Get Extbase Model instead of \TYPO3\CMS\Core\Resource\File
-            $newFile = $fileRepository->findByUid($newFileObject->getProperty('uid'));
+                /** @var \RKW\RkwResourcespace\Domain\Model\File $newFile */
+                // Important: Get Extbase Model instead of \TYPO3\CMS\Core\Resource\File
+                $newFile = $fileRepository->findByUid($newFileObject->getProperty('uid'));
 
-            // d) fetch & fill metadata
-            /** @var \RKW\RkwResourcespace\Domain\Model\FileMetadata $fileMetadata */
-            $fileMetadata = $fileMetadataRepository->findByFile($newFile)->getFirst();
-            $fileMetadata->setFile($newFile);
-            $this->setFileMetadata($fileMetadata, $resourceMetaData);
-            $fileMetadataRepository->update($fileMetadata);
+                // d) fetch & fill metadata
+                /** @var \RKW\RkwResourcespace\Domain\Model\FileMetadata $fileMetadata */
+                $fileMetadata = $fileMetadataRepository->findByFile($newFile)->getFirst();
+                $fileMetadata->setFile($newFile);
+                $this->setFileMetadata($fileMetadata, $resourceMetaData);
+                $fileMetadataRepository->update($fileMetadata);
 
-            // e) Optional: Create fileReference (Add file to Import-Object (will be saved in controller, if db-logging is enabled))
-            // -> Otherwise we don't need a reference yet (we just adding the image to the typo3 system)
-            /** @var \RKW\RkwResourcespace\Domain\Model\FileReference $newFileReference */
-            $newFileReference = $this->objectManager->get('RKW\\RkwResourcespace\\Domain\\Model\\FileReference');
-            $dataMapper = $this->objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper::class);
-            $newFileReference->setFile($newFile);
-            $newFileReference->setFieldname($fieldName);
-            $newFileReference->setTableLocal(filter_var($dataMapper->getDataMap(get_class($newFile))->getTableName(), FILTER_SANITIZE_STRING));
-            $newFileReference->setTablenames(filter_var($dataMapper->getDataMap(get_class($import))->getTableName(), FILTER_SANITIZE_STRING));
-            $import->setFile($newFileReference);
+                // e) Optional: Create fileReference (Add file to Import-Object (will be saved in controller, if db-logging is enabled))
+                // -> Otherwise we don't need a reference yet (we just adding the image to the typo3 system)
+                /** @var \RKW\RkwResourcespace\Domain\Model\FileReference $newFileReference */
+                $newFileReference = $this->objectManager->get('RKW\\RkwResourcespace\\Domain\\Model\\FileReference');
+                $dataMapper = $this->objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper::class);
+                $newFileReference->setFile($newFile);
+                $newFileReference->setFieldname($fieldName);
+                $newFileReference->setTableLocal(filter_var($dataMapper->getDataMap(get_class($newFile))->getTableName(), FILTER_SANITIZE_STRING));
+                $newFileReference->setTablenames(filter_var($dataMapper->getDataMap(get_class($import))->getTableName(), FILTER_SANITIZE_STRING));
+                $import->setFile($newFileReference);
 
-            // return message
-            return \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('tx_rkwresourcespace_helper_file.fileCreated', 'rkw_resourcespace');
-            //===
+                // return message
+                return LocalizationUtility::translate('tx_rkwresourcespace_helper_file.fileCreated', 'rkw_resourcespace');
+                //===
+            } catch (\Exception $e) {
+                $this->getLogger()->log(\TYPO3\CMS\Core\Log\LogLevel::ERROR, sprintf('Error while trying to create image in TYPO3: %s', $e->getMessage()));
+                // return message
+                return LocalizationUtility::translate('tx_rkwresourcespace_helper_file.errorMisconfiguration', 'rkw_resourcespace');
+                //===
+            }
 
         } else {
             $this->getLogger()->log(
@@ -258,7 +277,7 @@ class File implements \TYPO3\CMS\Core\SingletonInterface
             );
 
             // return message
-            return \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('tx_rkwresourcespace_helper_file.errorMisconfiguration', 'rkw_resourcespace');
+            return LocalizationUtility::translate('tx_rkwresourcespace_helper_file.errorMisconfiguration', 'rkw_resourcespace');
             //===
         }
     }
