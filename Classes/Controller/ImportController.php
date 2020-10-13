@@ -13,6 +13,9 @@ namespace RKW\RkwResourcespace\Controller;
  *
  * The TYPO3 project - inspiring people to share!
  */
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 /**
  * Class ImportController
@@ -65,6 +68,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         $resourceSpaceUserRealName = ''
     )
     {
+
         if ($resourceSpaceImageId) {
             /** @var \RKW\RkwResourcespace\Domain\Model\Import $import */
             $newImport = $this->objectManager->get('RKW\\RkwResourcespace\\Domain\\Model\\Import');
@@ -93,22 +97,24 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      */
     public function createAction(\RKW\RkwResourcespace\Domain\Model\Import $newImport)
     {
+
         // check ip, if access is restricted
         if ($this->settings['ipRestriction']) {
             $remoteAddr = filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP);
             if ($_SERVER['HTTP_X_FORWARDED_FOR']) {
-                $ips = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+                $ips = GeneralUtility::trimExplode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
                 if ($ips[0]) {
                     $remoteAddr = filter_var($ips[0], FILTER_VALIDATE_IP);
                 }
             }
-            $allowedIps = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $this->settings['ipRestriction']);
+
+            $allowedIps = GeneralUtility::trimExplode(',', $this->settings['ipRestriction']);
             if (!in_array($remoteAddr, $allowedIps)) {
                 $this->getLogger()->log(
                     \TYPO3\CMS\Core\Log\LogLevel::WARNING,
                     sprintf('Access forbidden: Mismatching IP: %s', $remoteAddr)
                 );
-                $this->addFlashMessage(\TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('tx_rkwresourcespace_controller_import.invalidIp', 'rkw_resourcespace'));
+                $this->addFlashMessage(LocalizationUtility::translate('tx_rkwresourcespace_controller_import.invalidIp', 'rkw_resourcespace'));
                 $this->forward('new');
                 //===
             }
@@ -116,23 +122,26 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
         /** @var \RKW\RkwResourcespace\Api\ResourceSpace $resourceSpaceApi */
         $resourceSpaceApi = $this->objectManager->get('RKW\\RkwResourcespace\\Api\\ResourceSpace');
-        // get resource path (url of image)
-        $resourcePathOfImage = $resourceSpaceApi->getResourcePath($newImport->getResourceSpaceImageId());
+
         // get resource data (like name, file extension etc)
         $resourceData = $resourceSpaceApi->getResourceData($newImport->getResourceSpaceImageId());
+
+        // get resource path (url of image)
+        $resourcePathOfImage = $resourceSpaceApi->getResourcePath($newImport->getResourceSpaceImageId(), $resourceData->file_extension);
+
         // get resource metadata
         $resourceMetaData = $resourceSpaceApi->getResourceFieldData($newImport->getResourceSpaceImageId());
 
-        /** @var \RKW\RkwResourcespace\Helper\File $fileHelper */
-        $fileHelper = $this->objectManager->get('RKW\\RkwResourcespace\\Helper\\File');
+        /** @var \RKW\RkwResourcespace\Utility\FileUtility $fileUtility */
+        $fileUtility = $this->objectManager->get('RKW\\RkwResourcespace\\Utility\\FileUtility');
 
         // Workaround: Are these following lines correctly?
         // Problem: Even not existing images will produce an $resourcePathOfImage and $resourceMetaData
         // -> But $resourceData seems correctly to be "false", if there is no image available
         if ($resourceData->file_checksum) {
-            $requestMessage = $fileHelper->createFile($resourcePathOfImage, $resourceData, $resourceMetaData, $newImport);
+            $requestMessage = $fileUtility->createFile($resourcePathOfImage, $resourceData, $resourceMetaData, $newImport);
         } else {
-            $requestMessage = \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('tx_rkwresourcespace_controller_import.noImageFound', 'rkw_resourcespace');
+            $requestMessage = LocalizationUtility::translate('tx_rkwresourcespace_controller_import.noImageFound', 'rkw_resourcespace');
         }
 
         $this->addFlashMessage($requestMessage);
@@ -153,6 +162,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
                 $this->importRepository->add($newImport);
             }
         }
+
         $this->forward('new');
         //===
     }
@@ -166,7 +176,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     protected function getLogger()
     {
         if (!$this->logger instanceof \TYPO3\CMS\Core\Log\Logger) {
-            $this->logger = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Log\\LogManager')->getLogger(__CLASS__);
+            $this->logger = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Log\\LogManager')->getLogger(__CLASS__);
         }
 
         return $this->logger;

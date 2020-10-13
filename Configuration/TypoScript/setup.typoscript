@@ -76,7 +76,6 @@ plugin.tx_rkwresourcespace_import {
 			baseUrl = {$plugin.tx_rkwresourcespace_import.settings.resourceSpaceApi.baseUrl}
 			user = {$plugin.tx_rkwresourcespace_import.settings.resourceSpaceApi.user}
 			password = {$plugin.tx_rkwresourcespace_import.settings.resourceSpaceApi.password}
-			privateKey = {$plugin.tx_rkwresourcespace_import.settings.resourceSpaceApi.privateKey}
             privateKey = {$plugin.tx_rkwresourcespace_import.settings.resourceSpaceApi.privateKey}
             proxy = {$plugin.tx_rkwresourcespace_import.settings.resourceSpaceApi.proxy}
             proxyUsername = {$plugin.tx_rkwresourcespace_import.settings.resourceSpaceApi.proxyUsername}
