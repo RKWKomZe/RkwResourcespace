@@ -6,7 +6,9 @@ use PhpParser\Error;
 use \RKW\RkwBasics\Helper\Common;
 use \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use \TYPO3\CMS\Core\Utility\GeneralUtility;
+use \TYPO3\CMS\Core\Utility\CommandUtility;
 use \TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 /*
@@ -132,6 +134,22 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
     public function createFile($imageUrl, $resourceData, $resourceMetaData, $import, $fieldName = 'file')
     {
 
+        // check for disallowed file extensions
+        if ($this->checkForDisallowedFileExtension($imageUrl)) {
+            // Log
+            $this->getLogger()->log(
+                \TYPO3\CMS\Core\Log\LogLevel::INFO,
+                sprintf('File %s has an disallowed file extension:', $imageUrl)
+            );
+
+            // return message
+            return LocalizationUtility::translate(
+                'tx_rkwresourcespace_helper_file.forbiddenFileExtension',
+                'rkw_resourcespace',
+                [strtoupper($this->settingsDefault['upload']['disallowedFileExtension'])]
+            );
+        }
+
         // save image to the system (simply use file_checksum as temp file name)
         // first: Check if URL can deliver something
         $headers = get_headers($imageUrl);
@@ -190,10 +208,10 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
             $sanitizedFileName = $storage->sanitizeFileName($this->fileName);
 
             /** @var \RKW\RkwResourcespace\Domain\Model\File $fileFromDb */
-            $fileFromDb = $fileRepository->findByName($sanitizedFileName)->getFirst();
+            //$fileFromDb = $fileRepository->findByName($sanitizedFileName)->getFirst();
+            $fileFromDb = $fileRepository->findByBeginningOfName($resourceData->ref)->getFirst();
 
             // check if file exists AND if the file path is the same we have defined in TS!
-            // @todo: Additional: Check if file really exists on disk? (image could be deleted manually)
             if (
                 $fileFromDb
                 && strpos($fileFromDb->getIdentifier(), $this->settingsDefault['uploadDestination']) === 0
@@ -216,6 +234,7 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
                 // resize image if maxWidth is defined
                 try {
                     $imageSize = getimagesize($this->tempName);
+
                     if (
                         $this->settingsDefault['upload']['processing']['maxWidth']
                         && $imageSize[0] > $this->settingsDefault['upload']['processing']['maxWidth']
@@ -303,7 +322,7 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
         } else {
             $fileExtension = $resourceData->file_extension;
         }
-        $this->fileName = $resourceData->ref . "_" . str_replace(' ', '_', strtolower($resourceData->field8)) . '.' . $fileExtension;
+        $this->fileName = $resourceData->ref . "_" . str_replace(' ', '_', $this->handleUmlauts(strtolower($resourceData->field8))) . '.' . $fileExtension;
     }
 
 
@@ -312,15 +331,17 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
      * this function is filtering metadata from the resourceSpace-api-request
      *
      * @param \RKW\RkwResourcespace\Domain\Model\FileMetadata $newFileMetadata
-     * @param array $resourceMetaData
+     * @param array                                           $resourceMetaData
      * @return void
+     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
      */
     protected function setFileMetadata($newFileMetadata, $resourceMetaData)
     {
         foreach ($resourceMetaData as $metaDataEntry) {
 
-            switch ($metaDataEntry->name) {
-                case "source":
+            switch ($metaDataEntry->resource_type_field) {
+                // 'source'
+                case 76:
                     /** @var \RKW\RkwResourcespace\Domain\Repository\MediaSourcesRepository $mediaSourcesRepository */
                     $mediaSourcesRepository = $this->objectManager->get('RKW\\RkwResourcespace\\Domain\\Repository\\MediaSourcesRepository');
                     $mediaSource = $mediaSourcesRepository->findOneByNameLike($metaDataEntry->value);
@@ -337,36 +358,45 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
                         $newFileMetadata->setTxRkwbasicsSource($newMediaSource);
                     }
                     break;
-                case "credit":
+                // 'credit'
+                case 10:
                     $newFileMetadata->setTxRkwbasicsPublisher(filter_var($metaDataEntry->value, FILTER_SANITIZE_STRING));
                     break;
-                case "title":
+                // 'title'
+                case 8:
                     $newFileMetadata->setTitle(filter_var($metaDataEntry->value, FILTER_SANITIZE_STRING));
                     break;
-                case "caption":
+                // 'caption'
+                case 18:
                     $newFileMetadata->setCaption(filter_var($metaDataEntry->value, FILTER_SANITIZE_STRING));
                     break;
-                case "keywords":
+                // 'keywords'
+                case 1:
                     $newFileMetadata->setKeywords(filter_var($metaDataEntry->value, FILTER_SANITIZE_STRING));
                     break;
-                case "date":
+                // date
+                case 12:
                     $newFileMetadata->setContentCreationDate(strtotime($metaDataEntry->value));
                     break;
-                case "description":
+                // text
+                case 72:
                     $newFileMetadata->setText(filter_var($metaDataEntry->value, FILTER_SANITIZE_STRING));
+                    break;
+                // additional text
+                case 25:
+                    $newFileMetadata->setDescription(filter_var($metaDataEntry->value, FILTER_SANITIZE_STRING));
                     break;
             }
         }
-
     }
 
 
     /**
      * resizeImage
      * As result it's returns the path of the new tmpFile
-     * Note: The new processed tmpFile will created in the system - but not saved as typo3 sys_file (this would be the next
+     * Note: The new processed tmpFile will created in the system - but not saved as TYPO3 sys_file (this would be the next
      * step)!
-     * Show for more imagick examples for typo3
+     * Show for more imagick examples for TYPO3
      * https://hotexamples.com/examples/typo3.cms.core.utility/GeneralUtility/imageMagickCommand/php-generalutility-imagemagickcommand-method-examples.html
      *
      * @return string|boolean
@@ -385,7 +415,7 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
             // d) the current and the new filename
             $parameterArray[] = $this->tempName . "[0] " . $this->newTempName;
             // do it!
-            $cmd = GeneralUtility::imageMagickCommand('convert', implode(' ', $parameterArray));
+            $cmd = CommandUtility::imageMagickCommand('convert', implode(' ', $parameterArray));
             \TYPO3\CMS\Core\Utility\CommandUtility::exec($cmd);
 
             $this->getLogger()->log(
@@ -407,6 +437,56 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
         return false;
         //===
     }
+
+
+    /**
+     * handleUmlauts
+     *
+     * because "iconv("UTF-8", "ASCII//TRANSLIT", $sanitizedFileName)" does not work (produce "?" symbols)
+     *
+     * @param $str
+     * @return string
+     */
+    protected function handleUmlauts($str){
+
+        $tempstr = Array(
+            'Ä' => 'AE',
+            'Ö' => 'OE',
+            'Ü' => 'UE',
+            'ä' => 'ae',
+            'ö' => 'oe',
+            'ü' => 'ue',
+            'ß' => 'ss'
+        );
+        return strtr($str, $tempstr);
+    }
+
+
+
+    /**
+     * checkForDisallowedFileExtension
+     *
+     * if set via TS: check for disallowed file extension
+     * returns TRUE, if
+     *
+     * @param $fileName
+     * @return bool
+     */
+    protected function checkForDisallowedFileExtension($fileName)
+    {
+        if ($this->settingsDefault['upload']['disallowedFileExtension']) {
+
+            $fileExtensionList = GeneralUtility::trimExplode(',', $this->settingsDefault['upload']['disallowedFileExtension']);
+            foreach ($fileExtensionList as $fileExtension) {
+                if (str_ends_with($fileName, $fileExtension)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 
 
     /**
