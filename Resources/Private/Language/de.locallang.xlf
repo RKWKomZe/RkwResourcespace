@@ -62,7 +62,7 @@
 			</trans-unit>
 			<trans-unit id="tx_rkwresourcespace_helper_file.fileAlreadyExists">
 				<source>This file already exists!</source>
-				<target>Kein Aktion notwendig: Dieses Bild steht bereits im Medienpool-Ordner zur Verfügung :)</target>
+				<target>Nach Abgleich der Bild-ID ist keine Aktion notwendig: Dieses Bild steht bereits im Medienpool-Ordner zur Verfügung :)</target>
 			</trans-unit>
 			<trans-unit id="tx_rkwresourcespace_helper_file.fileCreated">
 				<source>Success: File created!</source>
@@ -72,6 +72,10 @@
 				<source>The RkwResourcespace Extension seems misconfigured. Show extension log for further information.</source>
 				<target>Ooops! Hier ist etwas schief gelaufen. Scheinbar hapert es an der Konfiguration, bitte kontaktieren Sie den zuständigen Admin.</target>
 			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_helper_file.forbiddenFileExtension">
+                <source>This file extension is not allowed!</source>
+                <target>Ooops! Dieses Dateiformat ist nicht erlaubt. Nutzen Sie stattdessen z.B. das "jpg"-Format. Folgende Dateiendungen sind gesperrt: %s</target>
+            </trans-unit>
 
 
 
@@ -86,7 +90,7 @@
 			</trans-unit>
 			<trans-unit id="tx_rkwresourcespace_partial_form_fields.placeholder">
 				<source>ResourceSpace Image ID</source>
-				<target>ResourceSpace Bild ID hier eingeben</target>
+				<target>ResourceSpace Bild-ID hier eingeben</target>
 			</trans-unit>
 			<trans-unit id="tx_rkwresourcespace_partial_form_fields.import">
 				<source>Import</source>

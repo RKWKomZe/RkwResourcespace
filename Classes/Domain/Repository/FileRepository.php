@@ -23,5 +23,17 @@ namespace RKW\RkwResourcespace\Domain\Repository;
  */
 class FileRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
 {
+    /**
+     * Find by name using wildcard
+     *
+     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
+     */
+    public function findByBeginningOfName($name)
+    {
+        $query = $this->createQuery();
 
+        return $query->matching(
+            $query->like('name', $name . '_%')
+        )->execute();
+    }
 }

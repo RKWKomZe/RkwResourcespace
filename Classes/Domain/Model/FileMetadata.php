@@ -74,6 +74,13 @@ class FileMetadata extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     protected $text;
 
     /**
+     * description
+     *
+     * @var string
+     */
+    protected $description;
+
+    /**
      * title
      *
      * @var string
@@ -230,6 +237,22 @@ class FileMetadata extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     public function setText($text)
     {
         $this->text = $text;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    /**
+     * @param string $description
+     */
+    public function setDescription(string $description): void
+    {
+        $this->description = $description;
     }
 
     /**
