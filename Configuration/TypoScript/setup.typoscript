@@ -83,6 +83,7 @@ plugin.tx_rkwresourcespace_import {
         }
 		upload {
 			sysFileStorageUid = {$plugin.tx_rkwresourcespace_import.settings.upload.sysFileStorageUid}
+            disallowedFileExtension = {$plugin.tx_rkwresourcespace_import.settings.upload.disallowedFileExtension}
 			processing = {$plugin.tx_rkwresourcespace_import.settings.upload.processing}
 			processing {
 				forceFormat = {$plugin.tx_rkwresourcespace_import.settings.upload.processing.forceFormat}

@@ -63,6 +63,9 @@ plugin.tx_rkwresourcespace_import {
 			# cat=plugin.tx_rkwresourcespace_import//a; type=integer; label=uid of storage (table: sys_file_storage)
 			sysFileStorageUid = 1
 
+            # cat=plugin.tx_rkwresourcespace//f; type=string; label=list of disallowed file extensions (comma seperated list)
+            disallowedFileExtension = eps, bmp
+
 			# image specifications
 			processing = 0
 			processing {

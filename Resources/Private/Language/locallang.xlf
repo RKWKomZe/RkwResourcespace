@@ -56,7 +56,9 @@
 			<trans-unit id="tx_rkwresourcespace_helper_file.errorMisconfiguration">
 				<source>The RkwResourcespace Extension seems misconfigured. Show extension log for further information.</source>
 			</trans-unit>
-
+            <trans-unit id="tx_rkwresourcespace_helper_file.forbiddenFileExtension">
+                <source>This file extension is not allowed!</source>
+            </trans-unit>
 
 
 			<!-- TEMPLATES -->
