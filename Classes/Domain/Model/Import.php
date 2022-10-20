@@ -27,7 +27,7 @@ class Import extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * resourceSpaceImageId
      *
-     * @validate notEmpty
+     * @TYPO3\CMS\Extbase\Annotation\Validate("NotEmpty")
      * @var int
      */
     protected $resourceSpaceImageId;

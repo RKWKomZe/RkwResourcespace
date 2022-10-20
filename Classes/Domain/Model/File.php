@@ -35,7 +35,7 @@ class File extends \TYPO3\CMS\Extbase\Domain\Model\File
     /**
      * metadata
      *
-     * @cascade persist
+     * @TYPO3\CMS\Extbase\Annotation\ORM\Cascade("persist") persist
      * @var \RKW\RkwResourcespace\Domain\Model\FileMetadata
      */
     protected $metadata;
