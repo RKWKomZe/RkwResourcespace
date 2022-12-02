@@ -23,7 +23,7 @@ namespace RKW\RkwResourcespace\Domain\Model;
  * @package RKW_Resourcespace
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
  */
-class MediaSources extends \RKW\RkwBasics\Domain\Model\MediaSources
+class MediaSources extends \Madj2k\CoreExtended\Domain\Model\MediaSources
 {
 
 }

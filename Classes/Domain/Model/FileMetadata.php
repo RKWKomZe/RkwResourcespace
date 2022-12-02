@@ -307,7 +307,7 @@ class FileMetadata extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * txRkwbasicsSource
      *
-     * @var \RKW\RkwBasics\Domain\Model\MediaSources
+     * @var \Madj2k\CoreExtended\Domain\Model\MediaSources
      */
     protected $txRkwbasicsSource = null;
 
@@ -335,7 +335,7 @@ class FileMetadata extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * Returns the txRkwbasicsSource
      *
-     * @return \RKW\RkwBasics\Domain\Model\MediaSources $txRkwbasicsSource
+     * @return \Madj2k\CoreExtended\Domain\Model\MediaSources $txRkwbasicsSource
      */
     public function getTxRkwbasicsSource()
     {
@@ -345,10 +345,10 @@ class FileMetadata extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * Sets the txRkwbasicsSource
      *
-     * @param \RKW\RkwBasics\Domain\Model\MediaSources $txRkwbasicsSource
+     * @param \Madj2k\CoreExtended\Domain\Model\MediaSources $txRkwbasicsSource
      * @return void
      */
-    public function setTxRkwbasicsSource(\RKW\RkwBasics\Domain\Model\MediaSources $txRkwbasicsSource)
+    public function setTxRkwbasicsSource(\Madj2k\CoreExtended\Domain\Model\MediaSources $txRkwbasicsSource)
     {
         $this->txRkwbasicsSource = $txRkwbasicsSource;
     }

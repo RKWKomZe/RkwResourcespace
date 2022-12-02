@@ -3,7 +3,7 @@
 namespace RKW\RkwResourcespace\Utility;
 
 use PhpParser\Error;
-use RKW\RkwBasics\Utility\GeneralUtility as Common;
+use Madj2k\CoreExtended\Utility\GeneralUtility as Common;
 use \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use \TYPO3\CMS\Core\Utility\GeneralUtility;
 use \TYPO3\CMS\Core\Utility\CommandUtility;
@@ -497,7 +497,7 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
      */
     protected static function getSettings($which = ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS)
     {
-        return Common::getTyposcriptConfiguration('Rkwresourcespace', $which);
+        return Common::getTypoScriptConfiguration('Rkwresourcespace', $which);
         //===
     }
 

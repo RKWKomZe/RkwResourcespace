@@ -2,7 +2,7 @@
 
 namespace RKW\RkwResourcespace\Api;
 
-use RKW\RkwBasics\Utility\GeneralUtility as Common;
+use Madj2k\CoreExtended\Utility\GeneralUtility as Common;
 use \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use \TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
@@ -114,7 +114,7 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
      */
     protected static function getSettings($which = ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS)
     {
-        return Common::getTyposcriptConfiguration('Rkwresourcespace', $which);
+        return Common::getTypoScriptConfiguration('Rkwresourcespace', $which);
         //===
     }
 
