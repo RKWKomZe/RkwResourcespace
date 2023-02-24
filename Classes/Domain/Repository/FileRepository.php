@@ -38,7 +38,10 @@ class FileRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
         $query = $this->createQuery();
 
         return $query->matching(
-            $query->like('name', $name . '_%')
+            $query->logicalOr(
+                $query->like('name', $name . '\_%'),
+                $query->like('name', $name . '-%')
+            )
         )->execute();
     }
 }
