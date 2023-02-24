@@ -1,11 +1,28 @@
 config.tx_extbase.persistence {
 	classes {
+
+
+        // ==================================================================
+        Madj2k\CoreExtended\Domain\Model\File {
+            subclasses {
+                Tx_Ressourcespace_File = RKW\RkwResourcespace\Domain\Model\File
+            }
+        }
+
 		RKW\RkwResourcespace\Domain\Model\File {
 			mapping {
 				tableName = sys_file
 				identifier = identifier
 			}
 		}
+
+       // ==================================================================
+        Madj2k\CoreExtended\Domain\Model\FileReference {
+            subclasses {
+                Tx_Ressourcespace_FileReference = RKW\RkwResourcespace\Domain\Model\FileReference
+            }
+        }
+
 		RKW\RkwResourcespace\Domain\Model\FileReference {
 			mapping {
 				tableName = sys_file_reference
@@ -14,6 +31,14 @@ config.tx_extbase.persistence {
 				}
 			}
 		}
+
+       // ==================================================================
+        Madj2k\CoreExtended\Domain\Model\FileMetadata {
+            subclasses {
+                Tx_Ressourcespace_FileMetadata = RKW\RkwResourcespace\Domain\Model\FileMetadata
+            }
+        }
+
 		RKW\RkwResourcespace\Domain\Model\FileMetadata {
 			mapping {
 				tableName = sys_file_metadata
@@ -24,11 +49,27 @@ config.tx_extbase.persistence {
 				}
 			}
 		}
+
+		// ==================================================================
+        Madj2k\CoreExtended\Domain\Model\MediaSources {
+            subclasses {
+                Tx_Ressourcespace_MediaSources = RKW\RkwResourcespace\Domain\Model\MediaSources
+            }
+        }
+
 		RKW\RkwResourcespace\Domain\Model\MediaSources {
 			mapping {
-				tableName = tx_rkwbasics_domain_model_mediasources
+				tableName = tx_coreextended_domain_model_mediasources
 			}
 		}
+
+		// ==================================================================
+        Madj2k\CoreExtended\Domain\Model\BackendUser {
+            subclasses {
+                Tx_Ressourcespace_BackendUser = RKW\RkwResourcespace\Domain\Model\BackendUser
+            }
+        }
+
 		RKW\RkwResourcespace\Domain\Model\BackendUser {
 			mapping {
 				tableName = be_users
@@ -41,6 +82,7 @@ config.tx_extbase.persistence {
 			}
 		}
 	}
+
 	# make sure ref_index is updated
 	updateReferenceIndex = 1
 }
