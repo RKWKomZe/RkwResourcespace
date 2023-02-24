@@ -1,6 +1,6 @@
 <?php
-
 namespace RKW\RkwResourcespace\Domain\Repository;
+
 /*
  * This file is part of the TYPO3 CMS project.
  *
@@ -13,6 +13,8 @@ namespace RKW\RkwResourcespace\Domain\Repository;
  *
  * The TYPO3 project - inspiring people to share!
  */
+
+use RKW\RkwResourcespace\Domain\Model\MediaSources;
 
 /**
  * Class MediaSourcesRepository
@@ -30,7 +32,7 @@ class MediaSourcesRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
      * @param string $search
      * @return object|\RKW\RkwResourcespace\Domain\Model\MediaSources
      */
-    public function findOneByNameLike($search)
+    public function findOneByNameLike(string $search):? MediaSources
     {
         $query = $this->createQuery();
 
@@ -44,14 +46,11 @@ class MediaSourcesRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
         $query->statement('
 			SELECT *
 			FROM
-				tx_rkwbasics_domain_model_mediasources
+				tx_coreextended_domain_model_mediasources
 			WHERE
 				name LIKE "%' . $search . '%"
 		');
 
         return $query->execute()->getFirst();
-        //===
     }
 }
-
-?>

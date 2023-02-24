@@ -1,6 +1,6 @@
 <?php
-
 namespace RKW\RkwResourcespace\Controller;
+
 /*
  * This file is part of the TYPO3 CMS project.
  *
@@ -13,9 +13,15 @@ namespace RKW\RkwResourcespace\Controller;
  *
  * The TYPO3 project - inspiring people to share!
  */
+
+use RKW\RkwResourcespace\Api\ResourceSpace;
+use RKW\RkwResourcespace\Domain\Model\Import;
+use RKW\RkwResourcespace\Domain\Repository\BackendUserRepository;
+use RKW\RkwResourcespace\Domain\Repository\ImportRepository;
+use TYPO3\CMS\Core\Log\Logger;
+use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 /**
  * Class ImportController
@@ -28,25 +34,22 @@ use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 {
     /**
-     * importRepository
-     *
      * @var \RKW\RkwResourcespace\Domain\Repository\ImportRepository
      * @TYPO3\CMS\Extbase\Annotation\Inject
      */
-    protected $importRepository = null;
+    protected ImportRepository $importRepository;
+
 
     /**
-     * backendUserRepository
-     *
      * @var \RKW\RkwResourcespace\Domain\Repository\BackendUserRepository
      * @TYPO3\CMS\Extbase\Annotation\Inject
      */
-    protected $backendUserRepository = null;
+    protected BackendUserRepository $backendUserRepository;
 
     /**
-     * @var \TYPO3\CMS\Core\Log\Logger
+     * @var \TYPO3\CMS\Core\Log\Logger|null
      */
-    protected $logger;
+    protected ?Logger $logger = null;
 
 
     /**
@@ -54,20 +57,19 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      * Link example:
      * ###baseUrl###/index.php?id=###pidOfPlugin###&tx_rkwresourcespace_import[action]=new&tx_rkwresourcespace_import[controller]=Import&tx_rkwresourcespace_import[resourceSpaceImageId]=###resourceSpaceImageId###
      *
-     * @param integer $resourceSpaceImageId
-     * @param integer $resourceSpaceUserId
+     * @param int $resourceSpaceImageId
+     * @param int $resourceSpaceUserId
      * @param string $resourceSpaceUserName
      * @param string $resourceSpaceUserRealName
      * @return void
      * @throws \TYPO3\CMS\Extbase\Mvc\Exception\StopActionException
      */
     public function newAction(
-        $resourceSpaceImageId = null,
-        $resourceSpaceUserId = null,
-        $resourceSpaceUserName = '',
-        $resourceSpaceUserRealName = ''
-    )
-    {
+        int $resourceSpaceImageId = 0,
+        int $resourceSpaceUserId = 0,
+        string $resourceSpaceUserName = '',
+        string $resourceSpaceUserRealName = ''
+    ): void {
 
         if ($resourceSpaceImageId) {
             /** @var \RKW\RkwResourcespace\Domain\Model\Import $import */
@@ -95,7 +97,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
      * @throws \TYPO3\CMS\Core\Resource\Exception\ExistingTargetFileNameException
      */
-    public function createAction(\RKW\RkwResourcespace\Domain\Model\Import $newImport)
+    public function createAction(Import $newImport): void
     {
 
         // check ip, if access is restricted
@@ -121,7 +123,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         }
 
         /** @var \RKW\RkwResourcespace\Api\ResourceSpace $resourceSpaceApi */
-        $resourceSpaceApi = $this->objectManager->get('RKW\\RkwResourcespace\\Api\\ResourceSpace');
+        $resourceSpaceApi = $this->objectManager->get(ResourceSpace::class);
 
         // get resource data (like name, file extension etc)
         $resourceData = $resourceSpaceApi->getResourceData($newImport->getResourceSpaceImageId());
@@ -164,7 +166,6 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         }
 
         $this->forward('new');
-        //===
     }
 
 
@@ -173,13 +174,12 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      *
      * @return \TYPO3\CMS\Core\Log\Logger
      */
-    protected function getLogger()
+    protected function getLogger(): Logger
     {
         if (!$this->logger instanceof \TYPO3\CMS\Core\Log\Logger) {
-            $this->logger = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Log\\LogManager')->getLogger(__CLASS__);
+            $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         }
 
         return $this->logger;
-        //===
     }
 }

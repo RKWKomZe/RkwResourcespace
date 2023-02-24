@@ -1,11 +1,5 @@
 <?php
-
 namespace RKW\RkwResourcespace\Api;
-
-use Madj2k\CoreExtended\Utility\GeneralUtility as Common;
-use \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
-use \TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -20,6 +14,11 @@ use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Log\Logger;
+use TYPO3\CMS\Core\Log\LogManager;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
+use Madj2k\CoreExtended\Utility\GeneralUtility;
+
 /**
  * Class ResourceSpace
  *
@@ -31,45 +30,42 @@ use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
 {
     /**
-     * apiBaseUrl
-     *
      * @var string
      */
-    protected $apiBaseUrl;
+    protected string $apiBaseUrl = '';
+
 
     /**
-     * apiPrivateKey
-     *
      * @var string
      */
-    protected $apiPrivateKey;
+    protected string $apiPrivateKey = '';
+
 
     /**
-     * apiUser
-     *
      * @var string
      */
-    protected $apiUser;
+    protected $apiUser = '';
 
 
     /**
      * @var resource A stream context resource
      */
-    protected $streamContext;
+    protected $streamContext = null;
+
 
     /**
-     * logger
-     *
-     * @var \TYPO3\CMS\Core\Log\Logger
+     * @var \TYPO3\CMS\Core\Log\Logger|null
      */
-    protected $logger;
+    protected ?Logger $logger = null;
+
 
     /**
      * initializeObject
      *
      * @return void
+     * @throws \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException
      */
-    public function initializeObject()
+    public function initializeObject(): void
     {
         $settingsDefault = $this->getSettings();
 
@@ -78,7 +74,7 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
         $this->apiPrivateKey = filter_var($settingsDefault['resourceSpaceApi']['privateKey'], FILTER_SANITIZE_STRING);
         $this->apiUser = filter_var($settingsDefault['resourceSpaceApi']['user'], FILTER_SANITIZE_STRING);
 
-        // login header for etracker
+        // login header
         $opts = array(
             'http' => array(
                 'method' => 'GET',
@@ -96,7 +92,10 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
             );
 
             if ($settingsDefault['resourceSpaceApi']['proxyUsername']) {
-                $auth = base64_encode($settingsDefault['resourceSpaceApi']['proxyUsername'] . ':' . $settingsDefault['resourceSpaceApi']['proxyPassword']);
+                $auth = base64_encode(
+                    $settingsDefault['resourceSpaceApi']['proxyUsername'] . ':'
+                    . $settingsDefault['resourceSpaceApi']['proxyPassword']
+                );
                 $optsProxy['http']['header'] = 'Proxy-Authorization: Basic ' . $auth;
             }
             $opts = array_merge_recursive($opts, $optsProxy);
@@ -111,11 +110,11 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
      *
      * @param string $which Which type of settings will be loaded
      * @return array
+     * @throws \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException
      */
-    protected static function getSettings($which = ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS)
+    protected static function getSettings(string $which = ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS): array
     {
-        return Common::getTypoScriptConfiguration('Rkwresourcespace', $which);
-        //===
+        return GeneralUtility::getTypoScriptConfiguration('Rkwresourcespace', $which);
     }
 
 
@@ -123,23 +122,34 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
      * getResourcePath
      * (returns image-url)
      *
-     * @param integer $resourceSpaceImageId
+     * @param int $resourceSpaceImageId
      * @param string $file_extension
      * @return string
      */
-    public function getResourcePath($resourceSpaceImageId, $file_extension = 'jpg')
+    public function getResourcePath(int $resourceSpaceImageId, string $file_extension = 'jpg'): string
     {
         // create search query
         // Hint: without that empty "param2" - "param8" arguments the query will fail
-        $query = "user=" . $this->apiUser . "&function=get_resource_path&param1=" . $resourceSpaceImageId . "&param2=0&param3=&param4=1&param5=" . $file_extension . "&param6=&param7&param8=";
+        $query = "user=" . $this->apiUser . "&function=get_resource_path&param1="
+            . $resourceSpaceImageId . "&param2=0&param3=&param4=1&param5=" . $file_extension . "&param6=&param7&param8=";
         $sign = hash("sha256", $this->apiPrivateKey . $query);
 
         try {
-            return json_decode(file_get_contents($this->apiBaseUrl . "?" . $query . "&sign=" . $sign, false, $this->streamContext));
-            //===
+            return json_decode(
+                file_get_contents(
+                    $this->apiBaseUrl . "?" . $query . "&sign=" . $sign,
+                    false,
+                    $this->streamContext
+                )
+            );
+
         } catch (\Exception $e) {
-            $this->getLogger()->log(\TYPO3\CMS\Core\Log\LogLevel::ERROR, sprintf('Error while try to get image resource path: %s', $e->getMessage()));
+            $this->getLogger()->log(
+                \TYPO3\CMS\Core\Log\LogLevel::ERROR,
+                sprintf('Error while try to get image resource path: %s', $e->getMessage())
+            );
         }
+
         return '';
     }
 
@@ -148,10 +158,10 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
      * getResourceData
      * (returns basic file information like name, file extension etc)
      *
-     * @param integer $resourceSpaceImageId
+     * @param int $resourceSpaceImageId
      * @return \stdClass
      */
-    public function getResourceData($resourceSpaceImageId)
+    public function getResourceData(int $resourceSpaceImageId): \stdClass
     {
         // create search query
         $query = "user=" . $this->apiUser . "&function=get_resource_data&param1=" . $resourceSpaceImageId;
@@ -159,22 +169,29 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
 
 
         try {
-            $data = json_decode(file_get_contents($this->apiBaseUrl . "?" . $query . "&sign=" . $sign, false, $this->streamContext));
+            $data = json_decode(
+                file_get_contents(
+                    $this->apiBaseUrl . "?" . $query . "&sign=" . $sign,
+                    false,
+                    $this->streamContext
+                )
+            );
+
             // fix for foxy
             if (!$data->file_checksum) {
                 $data->file_checksum = sha1($data->ref);
             }
 
             return $data;
-            //===
-
 
         } catch (\Exception $e) {
-            $this->getLogger()->log(\TYPO3\CMS\Core\Log\LogLevel::ERROR, sprintf('Error while try to get image resource data: %s', $e->getMessage()));
+            $this->getLogger()->log(
+                \TYPO3\CMS\Core\Log\LogLevel::ERROR,
+                sprintf('Error while try to get image resource data: %s', $e->getMessage())
+            );
         }
 
         return new \stdClass();
-        //===
     }
 
 
@@ -182,24 +199,32 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
      * getResourceFieldData
      * (returns metadata)
      *
-     * @param integer $resourceSpaceImageId
+     * @param int $resourceSpaceImageId
      * @return array
      */
-    public function getResourceFieldData($resourceSpaceImageId)
+    public function getResourceFieldData(int $resourceSpaceImageId): array
     {
         // create search query
         $query = "user=" . $this->apiUser . "&function=get_resource_field_data&param1=" . $resourceSpaceImageId;
         $sign = hash("sha256", $this->apiPrivateKey . $query);
 
         try {
-            return json_decode(file_get_contents($this->apiBaseUrl . "?" . $query . "&sign=" . $sign, false, $this->streamContext));
-            //===
+            return json_decode(
+                file_get_contents(
+                    $this->apiBaseUrl . "?" . $query . "&sign=" . $sign,
+                    false,
+                    $this->streamContext)
+            );
+
         } catch (\Exception $e) {
-            $this->getLogger()->log(\TYPO3\CMS\Core\Log\LogLevel::ERROR, sprintf('Error while try to get image resource field data: %s', $e->getMessage()));
+
+            $this->getLogger()->log(
+                \TYPO3\CMS\Core\Log\LogLevel::ERROR,
+                sprintf('Error while try to get image resource field data: %s', $e->getMessage())
+            );
         }
 
         return [];
-        //===
     }
 
 
@@ -209,13 +234,12 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
      *
      * @return \TYPO3\CMS\Core\Log\Logger
      */
-    protected function getLogger()
+    protected function getLogger(): Logger
     {
         if (!$this->logger instanceof \TYPO3\CMS\Core\Log\Logger) {
-            $this->logger = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Log\\LogManager')->getLogger(__CLASS__);
+            $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         }
 
         return $this->logger;
-        //===
     }
 }

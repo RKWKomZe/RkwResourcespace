@@ -1,15 +1,5 @@
 <?php
-
 namespace RKW\RkwResourcespace\Utility;
-
-use PhpParser\Error;
-use Madj2k\CoreExtended\Utility\GeneralUtility as Common;
-use \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
-use \TYPO3\CMS\Core\Utility\GeneralUtility;
-use \TYPO3\CMS\Core\Utility\CommandUtility;
-use \TYPO3\CMS\Core\Resource\ResourceFactory;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
-use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -24,6 +14,23 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
  * The TYPO3 project - inspiring people to share!
  */
 
+use Madj2k\CoreExtended\Utility\GeneralUtility;
+use RKW\RkwResourcespace\Domain\Model\FileMetadata;
+use RKW\RkwResourcespace\Domain\Model\FileReference;
+use RKW\RkwResourcespace\Domain\Model\Import;
+use RKW\RkwResourcespace\Domain\Model\MediaSources;
+use RKW\RkwResourcespace\Domain\Repository\FileRepository;
+use RKW\RkwResourcespace\Domain\Repository\FileMetadataRepository;
+use RKW\RkwResourcespace\Domain\Repository\MediaSourcesRepository;
+use TYPO3\CMS\Core\Log\Logger;
+use TYPO3\CMS\Core\Log\LogManager;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
+use TYPO3\CMS\Core\Utility\CommandUtility;
+use TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+
 /**
  * Class File
  *
@@ -35,57 +42,51 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
 {
     /**
-     * fileName
-     *
      * @var string
      */
-    protected $fileName;
+    protected string $fileName = '';
+
 
     /**
-     * tempName
-     *
      * @var string
      */
-    protected $tempName;
+    protected string $tempName = '';
+
 
     /**
-     * newTempName
-     *
      * @var string
      */
-    protected $newTempName;
+    protected string $newTempName = '';
+
 
     /**
-     * settings
-     *
      * @var array
      */
-    protected $settingsDefault;
+    protected array $settingsDefault = [];
+
 
     /**
-     * objectManager
-     *
-     * @var \TYPO3\CMS\Extbase\Object\ObjectManager
+     * @var \TYPO3\CMS\Extbase\Object\ObjectManager|null
      */
-    protected $objectManager;
+    protected ?ObjectManager $objectManager = null;
+
 
     /**
-     * logger
-     *
-     * @var \TYPO3\CMS\Core\Log\Logger
+     * @var \TYPO3\CMS\Core\Log\Logger|null
      */
-    protected $logger;
+    protected ?Logger $logger = null;
 
 
     /**
      * initializeObject
      *
      * @return void
+     * @throws \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException
      */
-    public function initializeObject()
+    public function initializeObject(): void
     {
         $this->settingsDefault = $this->getSettings();
-        $this->objectManager = GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+        $this->objectManager = GeneralUtility::makeInstance(ObjectManager::class);
 
         // login header for etracker
         $opts = array(
@@ -105,7 +106,10 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
             );
 
             if ($this->settingsDefault['resourceSpaceApi']['proxyUsername']) {
-                $auth = base64_encode($this->settingsDefault['resourceSpaceApi']['proxyUsername'] . ':' . $this->settingsDefault['resourceSpaceApi']['proxyPassword']);
+                $auth = base64_encode(
+                    $this->settingsDefault['resourceSpaceApi']['proxyUsername'] . ':' .
+                    $this->settingsDefault['resourceSpaceApi']['proxyPassword']
+                );
                 $optsProxy['http']['header'] = 'Proxy-Authorization: Basic ' . $auth;
             }
             $opts = array_merge_recursive($opts, $optsProxy);
@@ -130,9 +134,15 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
      * @throws \TYPO3\CMS\Core\Resource\Exception\ExistingTargetFileNameException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
+     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
      */
-    public function createFile($imageUrl, $resourceData, $resourceMetaData, $import, $fieldName = 'file')
-    {
+    public function createFile(
+        string $imageUrl,
+        \StdClass $resourceData,
+        array $resourceMetaData,
+        Import  $import,
+        string $fieldName = 'file'
+    ): string {
 
         // check for disallowed file extensions
         if ($this->checkForDisallowedFileExtension($imageUrl)) {
@@ -179,15 +189,20 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
             );
 
             // return message
-            return LocalizationUtility::translate('tx_rkwresourcespace_helper_file.fileCopyFailed', 'rkw_resourcespace');
-            //===
+            return LocalizationUtility::translate(
+                'tx_rkwresourcespace_helper_file.fileCopyFailed',
+                'rkw_resourcespace'
+            );
         }
 
         // copy image
         try {
             copy($finalImageUrl, $this->settingsDefault['localBufferDestination'] . $resourceData->file_checksum);
         } catch (\Exception $e) {
-            $this->getLogger()->log(\TYPO3\CMS\Core\Log\LogLevel::ERROR, sprintf('Error while try to copy the image: %s', $e->getMessage()));
+            $this->getLogger()->log(
+                \TYPO3\CMS\Core\Log\LogLevel::ERROR,
+                sprintf('Error while try to copy the image: %s', $e->getMessage())
+            );
         }
 
         /** @var \TYPO3\CMS\Core\Resource\ResourceStorage $storage */
@@ -195,16 +210,18 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
         $storage = $resourceFactory->getStorageObject($this->settingsDefault['upload']['sysFileStorageUid']);
 
         if ($storage) {
+
             /** @var \RKW\RkwResourcespace\Domain\Repository\FileRepository $fileRepository */
-            $fileRepository = $this->objectManager->get('RKW\\RkwResourcespace\\Domain\\Repository\\FileRepository');
+            $fileRepository = $this->objectManager->get(FileRepository::class);
+
             /** @var \RKW\RkwResourcespace\Domain\Repository\FileMetadataRepository $fileMetadataRepository */
-            $fileMetadataRepository = $this->objectManager->get('RKW\\RkwResourcespace\\Domain\\Repository\\FileMetadataRepository');
+            $fileMetadataRepository = $this->objectManager->get(FileMetadataRepository::class);
 
             // a) create temp- & fileName
             $this->createTempAndFileName($resourceData);
 
             // b) Check if file(-name) already exists!
-            // important: use the sanitizeFileName function to get a compareable name (with converted äüöß e.g.)
+            // important: use the sanitizeFileName method to get a comparable name (with converted äüöß e.g.)
             $sanitizedFileName = $storage->sanitizeFileName($this->fileName);
 
             /** @var \RKW\RkwResourcespace\Domain\Model\File $fileFromDb */
@@ -223,12 +240,13 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
                 );
 
                 // return message
-                return LocalizationUtility::translate('tx_rkwresourcespace_helper_file.fileAlreadyExists', 'rkw_resourcespace');
-                //===
+                return LocalizationUtility::translate(
+                    'tx_rkwresourcespace_helper_file.fileAlreadyExists',
+                    'rkw_resourcespace'
+                );
             }
 
             // c) create file
-
             // process image (if enabled)
             if ($this->settingsDefault['upload']['processing']) {
                 // resize image if maxWidth is defined
@@ -246,16 +264,26 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
                         }
                     }
                 } catch (\Exception $e) {
-                    $this->getLogger()->log(\TYPO3\CMS\Core\Log\LogLevel::ERROR, sprintf('Error while try to get the image size: %s', $e->getMessage()));
+                    $this->getLogger()->log(
+                        \TYPO3\CMS\Core\Log\LogLevel::ERROR,
+                        sprintf('Error while try to get the image size: %s', $e->getMessage())
+                    );
+
                     // return message
-                    return LocalizationUtility::translate('tx_rkwresourcespace_helper_file.fileCreated', 'rkw_resourcespace');
-                    //===
+                    return LocalizationUtility::translate(
+                        'tx_rkwresourcespace_helper_file.fileCreated',
+                        'rkw_resourcespace'
+                    );
                 }
             }
 
             try {
                 /** @var \TYPO3\CMS\Core\Resource\File $newFileObject */
-                $newFileObject = $storage->addFile($this->tempName, $storage->getFolder($this->settingsDefault['uploadDestination']), $this->fileName);
+                $newFileObject = $storage->addFile(
+                    $this->tempName,
+                    $storage->getFolder($this->settingsDefault['uploadDestination']),
+                    $this->fileName
+                );
 
                 /** @var \RKW\RkwResourcespace\Domain\Model\File $newFile */
                 // Important: Get Extbase Model instead of \TYPO3\CMS\Core\Resource\File
@@ -268,36 +296,52 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
                 $this->setFileMetadata($fileMetadata, $resourceMetaData);
                 $fileMetadataRepository->update($fileMetadata);
 
-                // e) Optional: Create fileReference (Add file to Import-Object (will be saved in controller, if db-logging is enabled))
+                // e) Optional: Create fileReference (Add file to Import-Object
+                // (will be saved in controller, if db-logging is enabled))
                 // -> Otherwise we don't need a reference yet (we just adding the image to the typo3 system)
                 /** @var \RKW\RkwResourcespace\Domain\Model\FileReference $newFileReference */
-                $newFileReference = $this->objectManager->get('RKW\\RkwResourcespace\\Domain\\Model\\FileReference');
-                $dataMapper = $this->objectManager->get(\TYPO3\CMS\Extbase\Persistence\Generic\Mapper\DataMapper::class);
+                $newFileReference = $this->objectManager->get(FileReference::class);
+                $dataMapper = $this->objectManager->get(DataMapper::class);
                 $newFileReference->setFile($newFile);
                 $newFileReference->setFieldname($fieldName);
-                $newFileReference->setTableLocal(filter_var($dataMapper->getDataMap(get_class($newFile))->getTableName(), FILTER_SANITIZE_STRING));
-                $newFileReference->setTablenames(filter_var($dataMapper->getDataMap(get_class($import))->getTableName(), FILTER_SANITIZE_STRING));
+                $newFileReference->setTableLocal(
+                    filter_var($dataMapper->getDataMap(get_class($newFile))->getTableName(), FILTER_SANITIZE_STRING)
+                );
+                $newFileReference->setTablenames(
+                    filter_var($dataMapper->getDataMap(get_class($import))->getTableName(), FILTER_SANITIZE_STRING)
+                );
                 $import->setFile($newFileReference);
 
                 // return message
-                return LocalizationUtility::translate('tx_rkwresourcespace_helper_file.fileCreated', 'rkw_resourcespace');
-                //===
+                return LocalizationUtility::translate(
+                    'tx_rkwresourcespace_helper_file.fileCreated',
+                    'rkw_resourcespace'
+                );
+
             } catch (\Exception $e) {
-                $this->getLogger()->log(\TYPO3\CMS\Core\Log\LogLevel::ERROR, sprintf('Error while trying to create image in TYPO3: %s', $e->getMessage()));
+                $this->getLogger()->log(
+                    \TYPO3\CMS\Core\Log\LogLevel::ERROR,
+                    sprintf('Error while trying to create image in TYPO3: %s', $e->getMessage())
+                );
+
                 // return message
-                return LocalizationUtility::translate('tx_rkwresourcespace_helper_file.errorMisconfiguration', 'rkw_resourcespace');
-                //===
+                return LocalizationUtility::translate(
+                    'tx_rkwresourcespace_helper_file.errorMisconfiguration',
+                    'rkw_resourcespace'
+                );
             }
 
         } else {
             $this->getLogger()->log(
                 \TYPO3\CMS\Core\Log\LogLevel::ERROR,
-                sprintf('SysFileStorage not found or is misconfigured by typoscript. Please define a correct storage uid for file uploads.')
+                'SysFileStorage not found or is misconfigured by typoscript. Please define a correct storage uid for file uploads.'
             );
 
             // return message
-            return LocalizationUtility::translate('tx_rkwresourcespace_helper_file.errorMisconfiguration', 'rkw_resourcespace');
-            //===
+            return LocalizationUtility::translate(
+                'tx_rkwresourcespace_helper_file.errorMisconfiguration',
+                'rkw_resourcespace'
+            );
         }
     }
 
@@ -308,12 +352,13 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
      * @param \StdClass $resourceData
      * @return void
      */
-    protected function createTempAndFileName($resourceData)
+    protected function createTempAndFileName(\StdClass $resourceData): void
     {
         $this->tempName = $this->settingsDefault['localBufferDestination'] . $resourceData->file_checksum;
         // further tempName for optional file processing
         $this->newTempName = $this->tempName . '_new';
-        // if enabled and set: Use in TS defined image format. Else: Use the image format which is delivered by ResourceSpace
+        // if enabled and set: Use in TS defined image format.
+        // Else: Use the image format which is delivered by ResourceSpace
         if (
             $this->settingsDefault['upload']['processing']
             && $this->settingsDefault['upload']['processing']['forceFormat']
@@ -322,7 +367,12 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
         } else {
             $fileExtension = $resourceData->file_extension;
         }
-        $this->fileName = $resourceData->ref . "_" . str_replace(' ', '_', $this->handleUmlauts(strtolower($resourceData->field8))) . '.' . $fileExtension;
+        $this->fileName = $resourceData->ref . "_" .
+            str_replace(
+            ' ',
+            '_',
+            $this->handleUmlauts(strtolower($resourceData->field8))
+            ) . '.' . $fileExtension;
     }
 
 
@@ -331,11 +381,11 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
      * this function is filtering metadata from the resourceSpace-api-request
      *
      * @param \RKW\RkwResourcespace\Domain\Model\FileMetadata $newFileMetadata
-     * @param array                                           $resourceMetaData
+     * @param array $resourceMetaData
      * @return void
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
      */
-    protected function setFileMetadata($newFileMetadata, $resourceMetaData)
+    protected function setFileMetadata(FileMetadata $newFileMetadata, array $resourceMetaData): void
     {
         foreach ($resourceMetaData as $metaDataEntry) {
 
@@ -343,24 +393,24 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
                 // 'source'
                 case 76:
                     /** @var \RKW\RkwResourcespace\Domain\Repository\MediaSourcesRepository $mediaSourcesRepository */
-                    $mediaSourcesRepository = $this->objectManager->get('RKW\\RkwResourcespace\\Domain\\Repository\\MediaSourcesRepository');
+                    $mediaSourcesRepository = $this->objectManager->get(MediaSourcesRepository::class);
                     $mediaSource = $mediaSourcesRepository->findOneByNameLike($metaDataEntry->value);
                     if ($mediaSource) {
                         // use existing
-                        $newFileMetadata->setTxRkwbasicsSource($mediaSource);
+                        $newFileMetadata->setTxCoreextendedSource($mediaSource);
                     } else {
                         // create & add new
                         /** @var \RKW\RkwResourcespace\Domain\Model\MediaSources $newMediaSource */
-                        $newMediaSource = $this->objectManager->get('RKW\\RkwResourcespace\\Domain\\Model\\MediaSources');
+                        $newMediaSource = $this->objectManager->get(MediaSources::class);
                         $newMediaSource->setName($metaDataEntry->value);
                         $mediaSourcesRepository->add($newMediaSource);
                         // set new
-                        $newFileMetadata->setTxRkwbasicsSource($newMediaSource);
+                        $newFileMetadata->setTxCoreextendedSource($newMediaSource);
                     }
                     break;
                 // 'credit'
                 case 10:
-                    $newFileMetadata->setTxRkwbasicsPublisher(filter_var($metaDataEntry->value, FILTER_SANITIZE_STRING));
+                    $newFileMetadata->setTxCoreextendedPublisher(filter_var($metaDataEntry->value, FILTER_SANITIZE_STRING));
                     break;
                 // 'title'
                 case 8:
@@ -399,9 +449,9 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
      * Show for more imagick examples for TYPO3
      * https://hotexamples.com/examples/typo3.cms.core.utility/GeneralUtility/imageMagickCommand/php-generalutility-imagemagickcommand-method-examples.html
      *
-     * @return string|boolean
+     * @return string|null
      */
-    protected function resizeImage()
+    protected function resizeImage():? string
     {
         if (file_exists($this->tempName)) {
             $parameterArray = array();
@@ -426,7 +476,6 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
 
         if (file_exists($this->newTempName)) {
             return $this->newTempName;
-            //===
         }
 
         $this->getLogger()->log(
@@ -434,8 +483,7 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
             sprintf('Resizing of image failed. New temporary file %s not found (or could not be created)!', $this->newTempName)
         );
 
-        return false;
-        //===
+        return null;
     }
 
 
@@ -444,23 +492,13 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
      *
      * because "iconv("UTF-8", "ASCII//TRANSLIT", $sanitizedFileName)" does not work (produce "?" symbols)
      *
-     * @param $str
+     * @param string $str
      * @return string
      */
-    protected function handleUmlauts($str){
-
-        $tempstr = Array(
-            'Ä' => 'AE',
-            'Ö' => 'OE',
-            'Ü' => 'UE',
-            'ä' => 'ae',
-            'ö' => 'oe',
-            'ü' => 'ue',
-            'ß' => 'ss'
-        );
-        return strtr($str, $tempstr);
+    protected function handleUmlauts(string $str): string
+    {
+        return GeneralUtility::slugify($str);
     }
-
 
 
     /**
@@ -469,10 +507,10 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
      * if set via TS: check for disallowed file extension
      * returns TRUE, if
      *
-     * @param $fileName
+     * @param string $fileName
      * @return bool
      */
-    protected function checkForDisallowedFileExtension($fileName)
+    protected function checkForDisallowedFileExtension(string $fileName): bool
     {
         if ($this->settingsDefault['upload']['disallowedFileExtension']) {
 
@@ -488,17 +526,16 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
     }
 
 
-
     /**
      * Returns TYPO3 settings
      *
      * @param string $which Which type of settings will be loaded
      * @return array
+     * @throws \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException
      */
-    protected static function getSettings($which = ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS)
+    protected static function getSettings(string $which = ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS): array
     {
-        return Common::getTypoScriptConfiguration('Rkwresourcespace', $which);
-        //===
+        return GeneralUtility::getTypoScriptConfiguration('Rkwresourcespace', $which);
     }
 
 
@@ -507,13 +544,12 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
      *
      * @return \TYPO3\CMS\Core\Log\Logger
      */
-    protected function getLogger()
+    protected function getLogger(): Logger
     {
         if (!$this->logger instanceof \TYPO3\CMS\Core\Log\Logger) {
-            $this->logger = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Log\\LogManager')->getLogger(__CLASS__);
+            $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         }
 
         return $this->logger;
-        //===
     }
 }

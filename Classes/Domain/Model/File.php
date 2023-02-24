@@ -1,5 +1,4 @@
 <?php
-
 namespace RKW\RkwResourcespace\Domain\Model;
 
 /*
@@ -23,62 +22,7 @@ namespace RKW\RkwResourcespace\Domain\Model;
  * @package RKW_Resourcespace
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
  */
-class File extends \TYPO3\CMS\Extbase\Domain\Model\File
+class File extends \Madj2k\CoreExtended\Domain\Model\File
 {
-    /**
-     * identifier
-     *
-     * @var string
-     */
-    protected $identifier;
 
-    /**
-     * metadata
-     *
-     * @TYPO3\CMS\Extbase\Annotation\ORM\Cascade("persist") persist
-     * @var \RKW\RkwResourcespace\Domain\Model\FileMetadata
-     */
-    protected $metadata;
-
-    /**
-     * Returns the identifier
-     *
-     * @return integer $identifier
-     */
-    public function getIdentifier()
-    {
-        return $this->identifier;
-    }
-
-    /**
-     * Sets the identifier
-     *
-     * @param integer $identifier
-     * @return void
-     */
-    public function setIdentifier($identifier)
-    {
-        $this->identifier = $identifier;
-    }
-
-    /**
-     * Return the metadata
-     *
-     * @return \RKW\RkwResourcespace\Domain\Model\FileMetadata $metadata
-     */
-    public function getMetadata()
-    {
-        return $this->metadata;
-    }
-
-    /**
-     * Set the fileMetadata
-     *
-     * @param \RKW\RkwResourcespace\Domain\Model\FileMetadata $metadata
-     * @return void
-     */
-    public function setMetadata(\RKW\RkwResourcespace\Domain\Model\FileMetadata $metadata)
-    {
-        $this->metadata = $metadata;
-    }
 }
