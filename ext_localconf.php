@@ -32,7 +32,7 @@ call_user_func(
 				// add a FileWriter
 				'TYPO3\\CMS\\Core\\Log\\Writer\\FileWriter' => array(
 					// configuration for the writer
-					'logFile' => 'typo3temp/var/logs/tx_rkwresourcespace.log'
+					'logFile' => \TYPO3\CMS\Core\Core\Environment::getVarPath()  . '/log/tx_rkwresourcespace.log'
 				)
 			),
 		);
