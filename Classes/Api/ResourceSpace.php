@@ -44,7 +44,7 @@ class ResourceSpace implements \TYPO3\CMS\Core\SingletonInterface
     /**
      * @var string
      */
-    protected $apiUser = '';
+    protected string $apiUser = '';
 
 
     /**

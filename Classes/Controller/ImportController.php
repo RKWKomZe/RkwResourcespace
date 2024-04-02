@@ -46,10 +46,29 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      */
     protected BackendUserRepository $backendUserRepository;
 
+
     /**
      * @var \TYPO3\CMS\Core\Log\Logger|null
      */
     protected ?Logger $logger = null;
+
+
+    /**
+     * @param \RKW\RkwResourcespace\Domain\Repository\ImportRepository $importRepository
+     */
+    public function injectImportRepository(ImportRepository $importRepository)
+    {
+        $this->importRepository = $importRepository;
+    }
+
+
+    /**
+     * @param \RKW\RkwResourcespace\Domain\Repository\BackendUserRepository $backendUserRepository
+     */
+    public function injectMBackendUserRepository(BackendUserRepository $backendUserRepository)
+    {
+        $this->backendUserRepository = $backendUserRepository;
+    }
 
 
     /**

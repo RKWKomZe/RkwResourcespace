@@ -20,6 +20,72 @@ call_user_func(
             ]
         );
 
+        //=================================================================
+        // Add XClasses for extending existing classes
+        // ATTENTION: deactivated due to faulty mapping in TYPO3 9.5
+        //=================================================================
+        /*
+        // for TYPO3 12+
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\Madj2k\CoreExtended\Domain\Model\File::class] = [
+            'className' => \RKW\RkwResourcespace\Domain\Model\File::class
+        ];
+
+        // for TYPO3 9.5 - 11.5 only, not required for TYPO3 12
+        \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\Container\Container::class)
+            ->registerImplementation(
+                \Madj2k\CoreExtended\Domain\Model\File::class,
+                \RKW\RkwResourcespace\Domain\Model\File::class
+            );
+
+        // for TYPO3 12+
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\Madj2k\CoreExtended\Domain\Model\FileReference::class] = [
+            'className' => \RKW\RkwResourcespace\Domain\Model\FileReference::class
+        ];
+
+        // for TYPO3 9.5 - 11.5 only, not required for TYPO3 12
+        \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\Container\Container::class)
+            ->registerImplementation(
+                \Madj2k\CoreExtended\Domain\Model\FileReference::class,
+                \RKW\RkwResourcespace\Domain\Model\FileReference::class
+            );
+
+        // for TYPO3 12+
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\Madj2k\CoreExtended\Domain\Model\FileMetadata::class] = [
+            'className' => \RKW\RkwResourcespace\Domain\Model\FileMetadata::class
+        ];
+
+        // for TYPO3 9.5 - 11.5 only, not required for TYPO3 12
+        \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\Container\Container::class)
+            ->registerImplementation(
+                \Madj2k\CoreExtended\Domain\Model\FileMetadata::class,
+                \RKW\RkwResourcespace\Domain\Model\FileMetadata::class
+            );
+
+
+        // for TYPO3 12+
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\Madj2k\CoreExtended\Domain\Model\MediaSources::class] = [
+            'className' => \RKW\RkwResourcespace\Domain\Model\MediaSources::class
+        ];
+
+        // for TYPO3 9.5 - 11.5 only, not required for TYPO3 12
+        \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\Container\Container::class)
+            ->registerImplementation(
+                \Madj2k\CoreExtended\Domain\Model\MediaSources::class,
+                \RKW\RkwResourcespace\Domain\Model\MediaSources::class
+            );
+
+        // for TYPO3 12+
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\Madj2k\CoreExtended\Domain\Model\BackendUser::class] = [
+            'className' => \RKW\RkwResourcespace\Domain\Model\BackendUser::class
+        ];
+
+        // for TYPO3 9.5 - 11.5 only, not required for TYPO3 12
+        \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\Container\Container::class)
+            ->registerImplementation(
+                \Madj2k\CoreExtended\Domain\Model\BackendUser::class,
+                \RKW\RkwResourcespace\Domain\Model\BackendUser::class
+            );
+        */
 
         //=================================================================
         // Register Logger
@@ -37,5 +103,5 @@ call_user_func(
 			),
 		);
     },
-    $_EXTKEY
+    'rkw_resourcespace'
 );
