@@ -37,14 +37,14 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      * @var \RKW\RkwResourcespace\Domain\Repository\ImportRepository
      * @TYPO3\CMS\Extbase\Annotation\Inject
      */
-    protected ImportRepository $importRepository;
+    protected ?ImportRepository $importRepository = null;
 
 
     /**
      * @var \RKW\RkwResourcespace\Domain\Repository\BackendUserRepository
      * @TYPO3\CMS\Extbase\Annotation\Inject
      */
-    protected BackendUserRepository $backendUserRepository;
+    protected ?BackendUserRepository $backendUserRepository = null;
 
 
     /**
