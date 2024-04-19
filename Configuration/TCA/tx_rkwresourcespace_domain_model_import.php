@@ -18,9 +18,6 @@ return [
 		'searchFields' => 'resource_space_image_id,resource_space_user_id,resource_space_user_name,resource_space_user_real_name,file,backend_user',
 		'iconfile' => 'EXT:rkw_resourcespace/Resources/Public/Icons/tx_rkwresourcespace_domain_model_import.gif'
 	],
-	'interface' => [
-		'showRecordFieldList' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, resource_space_image_id, resource_space_user_id, resource_space_user_name, resource_space_user_real_name, file, backend_user',
-	],
 	'types' => [
 		'1' => ['showitem' => 'sys_language_uid, l10n_parent, l10n_diffsource, hidden, resource_space_image_id, resource_space_user_id, resource_space_user_name, resource_space_user_real_name, file, backend_user, --div--;LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:tabs.access, starttime, endtime'],
 	],
@@ -44,7 +41,6 @@ return [
 		],
 		'l10n_parent' => [
 			'displayCond' => 'FIELD:sys_language_uid:>:0',
-			'exclude' => true,
 			'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.l18n_parent',
 			'config' => [
 				'type' => 'select',
