@@ -64,14 +64,14 @@ call_user_func(
 
         // for TYPO3 12+
         $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\Madj2k\CoreExtended\Domain\Model\MediaSources::class] = [
-            'className' => \RKW\RkwResourcespace\Domain\Model\MediaSources::class
+            'className' => \RKW\RkwResourcespace\Domain\Model\MediaSource::class
         ];
 
         // for TYPO3 9.5 - 11.5 only, not required for TYPO3 12
         \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\Container\Container::class)
             ->registerImplementation(
                 \Madj2k\CoreExtended\Domain\Model\MediaSources::class,
-                \RKW\RkwResourcespace\Domain\Model\MediaSources::class
+                \RKW\RkwResourcespace\Domain\Model\MediaSource::class
             );
 
         // for TYPO3 12+

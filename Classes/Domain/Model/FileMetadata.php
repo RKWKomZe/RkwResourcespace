@@ -14,6 +14,8 @@ namespace RKW\RkwResourcespace\Domain\Model;
  * The TYPO3 project - inspiring people to share!
  */
 
+use Madj2k\CopyrightGuardian\Domain\Model\MediaSource;
+
 /**
  * Class FileMetadata
  *
@@ -24,6 +26,60 @@ namespace RKW\RkwResourcespace\Domain\Model;
  */
 class FileMetadata extends \Madj2k\CoreExtended\Domain\Model\FileMetadata
 {
+    /**
+     * @var string
+     */
+    protected string $txCopyrightguardianCreator = '';
 
+
+    /**
+     * @var \Madj2k\CopyrightGuardian\Domain\Model\MediaSource|null
+     */
+    protected ?MediaSource $txCopyrightguardianSource = null;
+
+    /**
+     * Returns the txCopyrightguardianCreator
+     *
+     * @return string
+     */
+    public function getTxCopyrightguardianCreator(): string
+    {
+        return $this->txCopyrightguardianCreator;
+    }
+
+
+    /**
+     * Sets the txCopyrightguardianCreator
+     *
+     * @param string $txCopyrightguardianCreator
+     * @return void
+     */
+    public function setTxCopyrightguardianCreator(string $txCopyrightguardianCreator)
+    {
+        $this->txCopyrightguardianCreator = $txCopyrightguardianCreator;
+    }
+
+
+    /**
+     * Returns the txCopyrightguardianSource
+     *
+     * @return \Madj2k\CopyrightGuardian\Domain\Model\MediaSource|null
+     */
+    public function getTxCopyrightguardianSource(): ?MediaSource
+    {
+        return $this->txCopyrightguardianSource;
+    }
+
+
+    /**
+     * Sets the txCopyrightguardianSource
+     *
+     * @param \Madj2k\CopyrightGuardian\Domain\Model\MediaSource $txCopyrightguardianSource
+     * @return void
+     */
+    public function setTxCopyrightguardianSource(MediaSource $txCopyrightguardianSource)
+    {
+        $this->txCopyrightguardianSource = $txCopyrightguardianSource;
+    }
 
 }
