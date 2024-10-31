@@ -277,6 +277,7 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
                 }
             }
 
+            try {
                 /** @var \TYPO3\CMS\Core\Resource\File $newFileObject */
                 $newFileObject = $storage->addFile(
                     $this->tempName,
@@ -317,7 +318,18 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
                     'rkw_resourcespace'
                 );
 
+            } catch (\Exception $e) {
+                $this->getLogger()->log(
+                    \TYPO3\CMS\Core\Log\LogLevel::ERROR,
+                    sprintf('Error while trying to create image in TYPO3: %s', $e->getMessage())
+                );
 
+                // return message
+                return LocalizationUtility::translate(
+                    'tx_rkwresourcespace_helper_file.errorMisconfiguration',
+                    'rkw_resourcespace'
+                );
+            }
 
         } else {
             $this->getLogger()->log(
