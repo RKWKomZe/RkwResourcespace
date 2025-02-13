@@ -56,15 +56,15 @@ config.tx_extbase.persistence {
 		}
 
 		// ==================================================================
-        Madj2k\CoreExtended\Domain\Model\MediaSources {
+        Madj2k\CopyrightGuardian\Domain\Model\MediaSource {
             subclasses {
-                Tx_Ressourcespace_MediaSources = RKW\RkwResourcespace\Domain\Model\MediaSources
+                Tx_Ressourcespace_MediaSource = RKW\RkwResourcespace\Domain\Model\MediaSource
             }
         }
 
-		RKW\RkwResourcespace\Domain\Model\MediaSources {
+		RKW\RkwResourcespace\Domain\Model\MediaSource {
 			mapping {
-				tableName = tx_coreextended_domain_model_mediasources
+				tableName = tx_copyrightguardian_domain_model_mediasource
 			}
 		}
 

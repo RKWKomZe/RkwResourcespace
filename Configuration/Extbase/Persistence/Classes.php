@@ -26,8 +26,8 @@ return [
             ],
         ],
     ],
-    \RKW\RkwResourcespace\Domain\Model\MediaSources::class => [
-        'tableName' => 'tx_coreextended_domain_model_mediasources',
+    \RKW\RkwResourcespace\Domain\Model\MediaSource::class => [
+        'tableName' => 'tx_copyrightguardian_domain_model_mediasource',
     ],
     \RKW\RkwResourcespace\Domain\Model\BackendUser::class => [
         'tableName' => 'be_users',

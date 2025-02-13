@@ -65,7 +65,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     /**
      * @param \RKW\RkwResourcespace\Domain\Repository\BackendUserRepository $backendUserRepository
      */
-    public function injectMBackendUserRepository(BackendUserRepository $backendUserRepository)
+    public function injectBackendUserRepository(BackendUserRepository $backendUserRepository)
     {
         $this->backendUserRepository = $backendUserRepository;
     }
