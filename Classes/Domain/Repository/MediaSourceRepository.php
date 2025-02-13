@@ -14,25 +14,25 @@ namespace RKW\RkwResourcespace\Domain\Repository;
  * The TYPO3 project - inspiring people to share!
  */
 
-use RKW\RkwResourcespace\Domain\Model\MediaSources;
+use RKW\RkwResourcespace\Domain\Model\MediaSource;
 
 /**
- * Class MediaSourcesRepository
+ * Class MediaSourceRepository
  *
  * @author Maximilian Fäßler <maximilian@faesslerweb.de>
  * @copyright RKW Kompetenzzentrum
  * @package RKW_Resourcespace
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
  */
-class MediaSourcesRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
+class MediaSourceRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
 {
     /**
      * Find one by partial string
      *
      * @param string $search
-     * @return object|\RKW\RkwResourcespace\Domain\Model\MediaSources
+     * @return object|\RKW\RkwResourcespace\Domain\Model\MediaSource
      */
-    public function findOneByNameLike(string $search):? MediaSources
+    public function findOneByNameLike(string $search):? MediaSource
     {
         $query = $this->createQuery();
 
@@ -46,7 +46,7 @@ class MediaSourcesRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
         $query->statement('
 			SELECT *
 			FROM
-				tx_coreextended_domain_model_mediasources
+				tx_copyrightguardian_domain_model_mediasource
 			WHERE
 				name LIKE "%' . $search . '%"
 		');

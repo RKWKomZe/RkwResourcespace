@@ -18,10 +18,10 @@ use Madj2k\CoreExtended\Utility\GeneralUtility;
 use RKW\RkwResourcespace\Domain\Model\FileMetadata;
 use RKW\RkwResourcespace\Domain\Model\FileReference;
 use RKW\RkwResourcespace\Domain\Model\Import;
-use RKW\RkwResourcespace\Domain\Model\MediaSources;
+use RKW\RkwResourcespace\Domain\Model\MediaSource;
 use RKW\RkwResourcespace\Domain\Repository\FileRepository;
 use RKW\RkwResourcespace\Domain\Repository\FileMetadataRepository;
-use RKW\RkwResourcespace\Domain\Repository\MediaSourcesRepository;
+use RKW\RkwResourcespace\Domain\Repository\MediaSourceRepository;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
@@ -392,25 +392,25 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
             switch ($metaDataEntry->resource_type_field) {
                 // 'source'
                 case 76:
-                    /** @var \RKW\RkwResourcespace\Domain\Repository\MediaSourcesRepository $mediaSourcesRepository */
-                    $mediaSourcesRepository = $this->objectManager->get(MediaSourcesRepository::class);
-                    $mediaSource = $mediaSourcesRepository->findOneByNameLike($metaDataEntry->value);
+                    /** @var \RKW\RkwResourcespace\Domain\Repository\MediaSourceRepository $mediaSourceRepository */
+                    $mediaSourceRepository = $this->objectManager->get(MediaSourceRepository::class);
+                    $mediaSource = $mediaSourceRepository->findOneByNameLike($metaDataEntry->value);
                     if ($mediaSource) {
                         // use existing
-                        $newFileMetadata->setTxCoreextendedSource($mediaSource);
+                        $newFileMetadata->setTxCopyrightguardianSource($mediaSource);
                     } else {
                         // create & add new
-                        /** @var \RKW\RkwResourcespace\Domain\Model\MediaSources $newMediaSource */
-                        $newMediaSource = $this->objectManager->get(MediaSources::class);
+                        /** @var \RKW\RkwResourcespace\Domain\Model\MediaSource $newMediaSource */
+                        $newMediaSource = $this->objectManager->get(MediaSource::class);
                         $newMediaSource->setName($metaDataEntry->value);
-                        $mediaSourcesRepository->add($newMediaSource);
+                        $mediaSourceRepository->add($newMediaSource);
                         // set new
-                        $newFileMetadata->setTxCoreextendedSource($newMediaSource);
+                        $newFileMetadata->setTxCopyrightguardianSource($newMediaSource);
                     }
                     break;
                 // 'credit'
                 case 10:
-                    $newFileMetadata->setTxCoreextendedPublisher(filter_var($metaDataEntry->value, FILTER_SANITIZE_STRING));
+                    $newFileMetadata->setTxCopyrightguardianCreator(filter_var($metaDataEntry->value, FILTER_SANITIZE_STRING));
                     break;
                 // 'title'
                 case 8:
