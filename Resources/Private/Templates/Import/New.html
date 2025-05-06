@@ -16,6 +16,27 @@ Otherwise your changes will be overwritten the next time you save the extension 
 
 		<f:render partial="FlashMessages" arguments="{_all}" />
 
+		<f:if condition="{returnMessageCode} == 300">
+			<f:comment>
+				<!-- if file already exists -->
+			</f:comment>
+			<hr class="spacer">
+			<h5>
+				<f:translate key='tx_rkwresourcespace_templates_new.overrideHeader' />
+			</h5>
+			<p>
+				<f:translate key='tx_rkwresourcespace_templates_new.overrideHint' />
+			</p>
+			<f:link.action
+				class="btn btn--secondary"
+				action="overrideMetadata"
+				arguments="{resourceSpaceImageId: resourceSpaceImageId}"
+			>
+				<f:translate key='tx_rkwresourcespace_templates_new.overrideButton' /> "{resourceSpaceImageId}"
+			</f:link.action>
+
+		</f:if>
+
 		<f:form noCache="true" action="create" name="newImport" object="{newImport}">
 			<f:if condition="{settings.enableFormUpload}">
 					<f:if condition="{settings.backendLoginIsMandatory}">

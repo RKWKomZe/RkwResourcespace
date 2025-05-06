@@ -12,11 +12,11 @@ call_user_func(
             'RKW.RkwResourcespace',
             'Import',
             [
-                'Import' => 'new, create'
+                'Import' => 'new, create, overrideMetadata'
             ],
             // non-cacheable actions
             [
-                'Import' => 'new, create'
+                'Import' => 'new, create, overrideMetadata'
             ]
         );
 
