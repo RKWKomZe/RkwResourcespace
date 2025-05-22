@@ -246,6 +246,12 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
             // finally: Update
             $fileMetadataRepository->update($fileMetadata);
 
+            // Log
+            $this->getLogger()->log(
+                \TYPO3\CMS\Core\Log\LogLevel::INFO,
+                sprintf('Meta data of resource %s have been updated.', $fileFromDb->getIdentifier())
+            );
+
             $this->addFlashMessage(
                 LocalizationUtility::translate(
                     'tx_rkwresourcespace_controller_import.metadataOverrideSuccess',
