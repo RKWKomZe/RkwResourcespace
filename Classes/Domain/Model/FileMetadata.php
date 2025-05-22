@@ -26,6 +26,13 @@ use Madj2k\CopyrightGuardian\Domain\Model\MediaSource;
  */
 class FileMetadata extends \Madj2k\CoreExtended\Domain\Model\FileMetadata
 {
+
+    /**
+     * @var string
+     */
+    protected string $alternative = '';
+
+
     /**
      * @var string
      */
@@ -36,6 +43,26 @@ class FileMetadata extends \Madj2k\CoreExtended\Domain\Model\FileMetadata
      * @var \Madj2k\CopyrightGuardian\Domain\Model\MediaSource|null
      */
     protected ?MediaSource $txCopyrightguardianSource = null;
+
+
+    /**
+     * @return string
+     */
+    public function getAlternative(): string
+    {
+        return $this->alternative;
+    }
+
+
+    /**
+     * @param string $alternative
+     * @return void
+     */
+    public function setAlternative(string $alternative): void
+    {
+        $this->alternative = $alternative;
+    }
+
 
     /**
      * Returns the txCopyrightguardianCreator

@@ -450,6 +450,7 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
                 // 'caption'
                 case 18:
                     $newFileMetadata->setCaption(filter_var($metaDataEntry->value, FILTER_SANITIZE_STRING));
+                    $newFileMetadata->setAlternative(filter_var($metaDataEntry->value, FILTER_SANITIZE_STRING));
                     break;
                 // 'keywords'
                 case 1:
