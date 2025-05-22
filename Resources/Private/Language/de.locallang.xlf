@@ -52,6 +52,14 @@
 				<source>No image found!</source>
 				<target>Ooops! Da ist etwas schiefgelaufen. Eine Datei mit dieser ID konnte im ResourceSpace nicht gefunden werden :-/</target>
 			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_controller_import.metadataOverrideSuccess">
+                <source>Metadata override success</source>
+                <target>Metadaten wurden erfolgreich übertragen</target>
+            </trans-unit>
+            <trans-unit id="tx_rkwresourcespace_controller_import.metadataOverrideFail">
+                <source>Metadata override fail</source>
+                <target>Ooops! Da ist etwas schiefgelaufen. Die Metadaten konnten nicht aktualisiert werden :-/</target>
+            </trans-unit>
 
 
 
@@ -64,6 +72,10 @@
 				<source>This file already exists!</source>
 				<target>Nach Abgleich der Bild-ID ist keine Aktion notwendig: Dieses Bild steht bereits im Medienpool-Ordner zur Verfügung :)</target>
 			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_helper_file.errorImageSize">
+                <source>Error while try to get the image size</source>
+                <target>Ooops! Hier ist etwas schiefgelaufen. Die Bildgröße konnte nicht abgerufen werden.</target>
+            </trans-unit>
 			<trans-unit id="tx_rkwresourcespace_helper_file.fileCreated">
 				<source>Success: File created!</source>
 				<target>Woohoo! Das Bild wurde erfolgreich übertragen. Bitte prüfen Sie vor der Verwendung des Bildes in TYPO3, ob die Urheberangaben korrekt übertragen wurden.</target>
@@ -96,6 +108,18 @@
 				<source>Import</source>
 				<target>Importieren!</target>
 			</trans-unit>
+			<trans-unit id="tx_rkwresourcespace_templates_new.overrideHeader">
+                <source>Optional</source>
+                <target>Optionale Aktion</target>
+            </trans-unit>
+            <trans-unit id="tx_rkwresourcespace_templates_new.overrideHint">
+                <source>At this point you can reload the meta information of the existing image in TYPO3. Only perform this action if you really want to. Existing information will be overwritten and cannot be restored.</source>
+                <target>Sie können an dieser Stelle die Meta-Informationen des in TYPO3 existierenden Bildes neu einspielen. Nehmen Sie diese Aktion nur vor, wenn dies wirklich gewollt ist. Vorhandene Informationen werden überschrieben und können nicht wieder hergestellt werden.</target>
+            </trans-unit>
+            <trans-unit id="tx_rkwresourcespace_templates_new.overrideButton">
+                <source>Update metadata for image ID </source>
+                <target>Metadaten aktualisieren für Bild-ID</target>
+            </trans-unit>
 
 
 		</body>
