@@ -130,28 +130,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      */
     public function createAction(Import $newImport): void
     {
-
-        // check ip, if access is restricted
-        if ($this->settings['ipRestriction']) {
-            $remoteAddr = filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP);
-            if ($_SERVER['HTTP_X_FORWARDED_FOR']) {
-                $ips = GeneralUtility::trimExplode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-                if ($ips[0]) {
-                    $remoteAddr = filter_var($ips[0], FILTER_VALIDATE_IP);
-                }
-            }
-
-            $allowedIps = GeneralUtility::trimExplode(',', $this->settings['ipRestriction']);
-            if (!in_array($remoteAddr, $allowedIps)) {
-                $this->getLogger()->log(
-                    \TYPO3\CMS\Core\Log\LogLevel::WARNING,
-                    sprintf('Access forbidden: Mismatching IP: %s', $remoteAddr)
-                );
-                $this->addFlashMessage(LocalizationUtility::translate('tx_rkwresourcespace_controller_import.invalidIp', 'rkw_resourcespace'));
-                $this->forward('new');
-                //===
-            }
-        }
+        $this->checkIpIfAccessIsRestricted();
 
         $returnMessageCode = 0;
 
@@ -223,26 +202,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      */
     protected function overrideMetadataAction(int $resourceSpaceImageId): void
     {
-        // check ip, if access is restricted
-        if ($this->settings['ipRestriction']) {
-            $remoteAddr = filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP);
-            if ($_SERVER['HTTP_X_FORWARDED_FOR']) {
-                $ips = GeneralUtility::trimExplode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-                if ($ips[0]) {
-                    $remoteAddr = filter_var($ips[0], FILTER_VALIDATE_IP);
-                }
-            }
-
-            $allowedIps = GeneralUtility::trimExplode(',', $this->settings['ipRestriction']);
-            if (!in_array($remoteAddr, $allowedIps)) {
-                $this->getLogger()->log(
-                    \TYPO3\CMS\Core\Log\LogLevel::WARNING,
-                    sprintf('Access forbidden: Mismatching IP: %s', $remoteAddr)
-                );
-                $this->addFlashMessage(LocalizationUtility::translate('tx_rkwresourcespace_controller_import.invalidIp', 'rkw_resourcespace'));
-                $this->forward('new');
-            }
-        }
+        $this->checkIpIfAccessIsRestricted();
 
         // 1. Get data from api
         /** @var \RKW\RkwResourcespace\Api\ResourceSpace $resourceSpaceApi */
@@ -321,5 +281,34 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         }
 
         return $this->logger;
+    }
+
+    /**
+     * @return void
+     * @throws StopActionException
+     */
+    protected function checkIpIfAccessIsRestricted(): void
+    {
+// check ip, if access is restricted
+        if ($this->settings['ipRestriction']) {
+            $remoteAddr = filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP);
+            if ($_SERVER['HTTP_X_FORWARDED_FOR']) {
+                $ips = GeneralUtility::trimExplode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+                if ($ips[0]) {
+                    $remoteAddr = filter_var($ips[0], FILTER_VALIDATE_IP);
+                }
+            }
+
+            $allowedIps = GeneralUtility::trimExplode(',', $this->settings['ipRestriction']);
+            if (!in_array($remoteAddr, $allowedIps)) {
+                $this->getLogger()->log(
+                    \TYPO3\CMS\Core\Log\LogLevel::WARNING,
+                    sprintf('Access forbidden: Mismatching IP: %s', $remoteAddr)
+                );
+                $this->addFlashMessage(LocalizationUtility::translate('tx_rkwresourcespace_controller_import.invalidIp', 'rkw_resourcespace'));
+                $this->forward('new');
+                //===
+            }
+        }
     }
 }
