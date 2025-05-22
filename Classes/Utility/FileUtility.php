@@ -130,7 +130,7 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
      * @param array $resourceMetaData
      * @param \RKW\RkwResourcespace\Domain\Model\Import $import
      * @param string $fieldName
-     * @return string
+     * @return array
      * @throws \TYPO3\CMS\Core\Resource\Exception\ExistingTargetFileNameException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
@@ -142,7 +142,7 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
         array $resourceMetaData,
         Import  $import,
         string $fieldName = 'file'
-    ): string {
+    ): array {
 
         // check for disallowed file extensions
         if ($this->checkForDisallowedFileExtension($imageUrl)) {
@@ -153,11 +153,15 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
             );
 
             // return message
-            return LocalizationUtility::translate(
-                'tx_rkwresourcespace_helper_file.forbiddenFileExtension',
-                'rkw_resourcespace',
-                [strtoupper($this->settingsDefault['upload']['disallowedFileExtension'])]
-            );
+            // 500 - disallowed file extension
+            return [
+                'code' => 500,
+                'message' => LocalizationUtility::translate(
+                    'tx_rkwresourcespace_helper_file.forbiddenFileExtension',
+                    'rkw_resourcespace',
+                    [strtoupper($this->settingsDefault['upload']['disallowedFileExtension'])])
+            ];
+
         }
 
         // save image to the system (simply use file_checksum as temp file name)
@@ -189,10 +193,14 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
             );
 
             // return message
-            return LocalizationUtility::translate(
-                'tx_rkwresourcespace_helper_file.fileCopyFailed',
-                'rkw_resourcespace'
-            );
+            // 501 - file copy failed
+            return [
+                'code' => 501,
+                'message' => LocalizationUtility::translate(
+                    'tx_rkwresourcespace_helper_file.fileCopyFailed',
+                    'rkw_resourcespace'
+                )
+            ];
         }
 
         // copy image
@@ -240,10 +248,15 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
                 );
 
                 // return message
-                return LocalizationUtility::translate(
-                    'tx_rkwresourcespace_helper_file.fileAlreadyExists',
-                    'rkw_resourcespace'
-                );
+                // 300 - file already exists
+                return [
+                    'code' => 300,
+                    'message' => LocalizationUtility::translate(
+                        'tx_rkwresourcespace_helper_file.fileAlreadyExists',
+                        'rkw_resourcespace'
+                    )
+                ];
+
             }
 
             // c) create file
@@ -270,10 +283,15 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
                     );
 
                     // return message
-                    return LocalizationUtility::translate(
-                        'tx_rkwresourcespace_helper_file.fileCreated',
-                        'rkw_resourcespace'
-                    );
+                    // 503 - error image size
+                    return [
+                        'code' => 503,
+                        'message' => LocalizationUtility::translate(
+                            'tx_rkwresourcespace_helper_file.errorImageSize',
+                            'rkw_resourcespace'
+                        )
+                    ];
+
                 }
             }
 
@@ -313,10 +331,14 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
                 $import->setFile($newFileReference);
 
                 // return message
-                return LocalizationUtility::translate(
-                    'tx_rkwresourcespace_helper_file.fileCreated',
-                    'rkw_resourcespace'
-                );
+                // 200 - success: File created
+                return [
+                    'code' => 200,
+                    'message' => LocalizationUtility::translate(
+                        'tx_rkwresourcespace_helper_file.fileCreated',
+                        'rkw_resourcespace'
+                    )
+                ];
 
             } catch (\Exception $e) {
                 $this->getLogger()->log(
@@ -325,10 +347,15 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
                 );
 
                 // return message
-                return LocalizationUtility::translate(
-                    'tx_rkwresourcespace_helper_file.errorMisconfiguration',
-                    'rkw_resourcespace'
-                );
+                // 504 - misconfiguration
+                return [
+                    'code' => 504,
+                    'message' => LocalizationUtility::translate(
+                        'tx_rkwresourcespace_helper_file.errorMisconfiguration',
+                        'rkw_resourcespace'
+                    )
+                ];
+
             }
 
         } else {
@@ -338,10 +365,14 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
             );
 
             // return message
-            return LocalizationUtility::translate(
-                'tx_rkwresourcespace_helper_file.errorMisconfiguration',
-                'rkw_resourcespace'
-            );
+            // 504 - misconfiguration
+            return [
+                'code' => 504,
+                'message' => LocalizationUtility::translate(
+                    'tx_rkwresourcespace_helper_file.errorMisconfiguration',
+                    'rkw_resourcespace'
+                )
+            ];
         }
     }
 
@@ -385,7 +416,7 @@ class FileUtility implements \TYPO3\CMS\Core\SingletonInterface
      * @return void
      * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
      */
-    protected function setFileMetadata(FileMetadata $newFileMetadata, array $resourceMetaData): void
+    public function setFileMetadata(FileMetadata $newFileMetadata, array $resourceMetaData): void
     {
         foreach ($resourceMetaData as $metaDataEntry) {
 
