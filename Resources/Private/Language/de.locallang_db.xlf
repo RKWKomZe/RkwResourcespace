@@ -18,15 +18,15 @@
 			</trans-unit>
 			<trans-unit id="tx_rkwresourcespace_domain_model_import.resource_space_user_id">
 				<source>ID of resource space user</source>
-				<target>ID des ResourceSpace Nutzers</target>
+				<target>ID des ResourceSpace Nutzenden</target>
 			</trans-unit>
 			<trans-unit id="tx_rkwresourcespace_domain_model_import.resource_space_user_name">
 				<source>User name of resource space user</source>
-				<target>Name des ResourceSpace Nutzers</target>
+				<target>Name des ResourceSpace Nutzenden</target>
 			</trans-unit>
 			<trans-unit id="tx_rkwresourcespace_domain_model_import.resource_space_user_real_name">
 				<source>Real name of resource space user</source>
-				<target>Realer Name des ResourceSpace Nutzers</target>
+				<target>Realer Name des ResourceSpace Nutzenden</target>
 			</trans-unit>
 			<trans-unit id="tx_rkwresourcespace_domain_model_import.file">
 				<source>File</source>
@@ -34,7 +34,7 @@
 			</trans-unit>
 			<trans-unit id="tx_rkwresourcespace_domain_model_import.backend_user">
 				<source>Backend user</source>
-				<target>Backend Nutzer</target>
+				<target>Backend Nutzende</target>
 			</trans-unit>
 		</body>
 	</file>
