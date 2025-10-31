@@ -14,6 +14,7 @@ namespace RKW\RkwResourcespace\Domain\Repository;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 /**
@@ -30,8 +31,8 @@ class FileRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
      * Find by name using wildcard
      *
      * @param string $name
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException
+     * @return QueryResultInterface
+     * @throws InvalidQueryException
      */
     public function findByBeginningOfName(string $name): QueryResultInterface
     {
