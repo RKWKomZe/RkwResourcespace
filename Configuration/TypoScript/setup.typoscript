@@ -139,3 +139,7 @@ plugin.tx_rkwresourcespace_import {
 		}
 	}
 }
+
+# Make the same settings available in backend/CLI contexts. The Extbase
+# BackendConfigurationManager reads extension settings from module.tx_*.
+module.tx_rkwresourcespace < plugin.tx_rkwresourcespace_import

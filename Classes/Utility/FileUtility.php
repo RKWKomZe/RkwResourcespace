@@ -25,6 +25,7 @@ use RKW\RkwResourcespace\Domain\Model\MediaSource;
 use RKW\RkwResourcespace\Domain\Repository\FileRepository;
 use RKW\RkwResourcespace\Domain\Repository\FileMetadataRepository;
 use RKW\RkwResourcespace\Domain\Repository\MediaSourceRepository;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Resource\Exception\InsufficientFolderAccessPermissionsException;
@@ -319,6 +320,13 @@ class FileUtility implements SingletonInterface
                 $this->setFileMetadata($fileMetadata, $resourceMetaData);
                 $fileMetadataRepository->update($fileMetadata);
 
+                // Mark new imports immediately so the recurring metadata command
+                // can pick them up without relying on the one-time upgrade wizard.
+                $this->markAsResourceSpaceImport(
+                    (int)$newFileObject->getProperty('uid'),
+                    (int)$resourceData->ref
+                );
+
                 // e) Optional: Create fileReference (Add a file to Import-Object
                 // (will be saved in controller, if db-logging is enabled))
                 // -> Otherwise we don't need a reference yet (we're just adding the image to the typo3 system)
@@ -456,6 +464,32 @@ class FileUtility implements SingletonInterface
                     break;
             }
         }
+    }
+
+
+    /**
+     * Mark a newly created file as a ResourceSpace import.
+     *
+     * @param int $fileUid
+     * @param int $resourceSpaceImageId
+     * @return void
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    protected function markAsResourceSpaceImport(int $fileUid, int $resourceSpaceImageId): void
+    {
+        $connection = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
+            ConnectionPool::class
+        )->getConnectionForTable('sys_file');
+
+        $connection->update(
+            'sys_file',
+            [
+                'tx_rkwresourcespace_is_import' => 1,
+                'tx_rkwresourcespace_tstamp_import' => time(),
+                'tx_rkwresourcespace_rkwmedia_image_id' => $resourceSpaceImageId,
+            ],
+            ['uid' => $fileUid]
+        );
     }
 
 

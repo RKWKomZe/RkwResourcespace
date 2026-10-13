@@ -19,6 +19,7 @@ call_user_func(
                 'Import' => 'new, create, overrideMetadata'
             ]
         );
+        $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/install']['update']['rkwResourcespaceInitializeMetadataFields'] = \RKW\RkwResourcespace\Install\InitializeMetadataFieldsUpdate::class;
 
         //=================================================================
         // Add XClasses for extending existing classes
