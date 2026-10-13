@@ -15,6 +15,7 @@ namespace RKW\RkwResourcespace\Domain\Repository;
  */
 
 use RKW\RkwResourcespace\Domain\Model\MediaSource;
+use TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
  * Class MediaSourceRepository
@@ -24,7 +25,7 @@ use RKW\RkwResourcespace\Domain\Model\MediaSource;
  * @package RKW_Resourcespace
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
  */
-class MediaSourceRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
+class MediaSourceRepository extends Repository
 {
     /**
      * Find one by partial string
@@ -35,13 +36,6 @@ class MediaSourceRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
     public function findOneByNameLike(string $search):? MediaSource
     {
         $query = $this->createQuery();
-
-        /*
-        // -> does not work
-        $query->matching(
-            $query->like('name', '%' . $search . '%')
-        );
-        */
 
         $query->statement('
 			SELECT *

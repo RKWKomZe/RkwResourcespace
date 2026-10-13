@@ -14,17 +14,24 @@ namespace RKW\RkwResourcespace\Controller;
  * The TYPO3 project - inspiring people to share!
  */
 
+use Psr\Log\LogLevel as LogLevelAlias;
 use RKW\RkwResourcespace\Api\ResourceSpace;
+use RKW\RkwResourcespace\Domain\Model\BackendUser;
+use RKW\RkwResourcespace\Domain\Model\File;
 use RKW\RkwResourcespace\Domain\Model\Import;
 use RKW\RkwResourcespace\Domain\Repository\BackendUserRepository;
 use RKW\RkwResourcespace\Domain\Repository\FileMetadataRepository;
 use RKW\RkwResourcespace\Domain\Repository\FileRepository;
 use RKW\RkwResourcespace\Domain\Repository\ImportRepository;
+use RKW\RkwResourcespace\Utility\FileUtility;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\Exception\StopActionException;
+use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
+use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 /**
@@ -35,7 +42,7 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
  * @package RKW_Resourcespace
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
  */
-class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
+class ImportController extends ActionController
 {
     /**
      * @var \RKW\RkwResourcespace\Domain\Repository\ImportRepository
@@ -51,7 +58,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     protected ?BackendUserRepository $backendUserRepository = null;
 
     /**
-     * @var \TYPO3\CMS\Core\Log\Logger|null
+     * @var Logger|null
      */
     protected ?Logger $logger = null;
 
@@ -59,7 +66,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     /**
      * @param \RKW\RkwResourcespace\Domain\Repository\ImportRepository $importRepository
      */
-    public function injectImportRepository(ImportRepository $importRepository)
+    public function injectImportRepository(ImportRepository $importRepository): void
     {
         $this->importRepository = $importRepository;
     }
@@ -68,7 +75,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     /**
      * @param \RKW\RkwResourcespace\Domain\Repository\BackendUserRepository $backendUserRepository
      */
-    public function injectBackendUserRepository(BackendUserRepository $backendUserRepository)
+    public function injectBackendUserRepository(BackendUserRepository $backendUserRepository): void
     {
         $this->backendUserRepository = $backendUserRepository;
     }
@@ -99,33 +106,31 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
             $resourceSpaceImageId
             && !$returnMessageCode
         ) {
-            /** @var \RKW\RkwResourcespace\Domain\Model\Import $import */
-            $newImport = $this->objectManager->get(\RKW\RkwResourcespace\Domain\Model\Import::class);
+            /** @var Import $import */
+            $newImport = GeneralUtility::makeInstance(Import::class);
             $newImport->setResourceSpaceImageId($resourceSpaceImageId);
             $newImport->setResourceSpaceUserId($resourceSpaceUserId);
-            $newImport->setResourceSpaceUserName(filter_var($resourceSpaceUserName, FILTER_SANITIZE_STRING));
-            $newImport->setResourceSpaceUserRealName(filter_var($resourceSpaceUserRealName, FILTER_SANITIZE_STRING));
+            $newImport->setResourceSpaceUserName(trim(strip_tags($resourceSpaceUserName)));
+            $newImport->setResourceSpaceUserRealName(trim(strip_tags($resourceSpaceUserRealName)));
 
             $this->forward('create', null, null, array('newImport' => $newImport));
-            //===
         }
 
         // for metadata update link
         $this->view->assign('resourceSpaceImageId', $resourceSpaceImageId);
         $this->view->assign('returnMessageCode', $returnMessageCode);
 
-        // else: show view with upload form (if allowed by settings.enableFormUpload)
-
+        // else: show a view with an upload form (if allowed by settings.enableFormUpload)
     }
 
 
     /**
      * action create
      *
-     * @param \RKW\RkwResourcespace\Domain\Model\Import $newImport
+     * @param Import $newImport
      * @return void
-     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\StopActionException
-     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
+     * @throws StopActionException
+     * @throws IllegalObjectTypeException
      * @throws \TYPO3\CMS\Core\Resource\Exception\ExistingTargetFileNameException
      */
     public function createAction(Import $newImport): void
@@ -134,24 +139,24 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
         $returnMessageCode = 0;
 
-        /** @var \RKW\RkwResourcespace\Api\ResourceSpace $resourceSpaceApi */
-        $resourceSpaceApi = $this->objectManager->get(ResourceSpace::class);
+        /** @var ResourceSpace $resourceSpaceApi */
+        $resourceSpaceApi = GeneralUtility::makeInstance(ResourceSpace::class);
 
-        // get resource data (like name, file extension etc)
+        // get resource data (like name, file extension, etc.)
         $resourceData = $resourceSpaceApi->getResourceData($newImport->getResourceSpaceImageId());
 
-        // get resource path (url of image)
+        // get a resource path (url of image)
         $resourcePathOfImage = $resourceSpaceApi->getResourcePath($newImport->getResourceSpaceImageId(), $resourceData->file_extension);
 
         // get resource metadata
         $resourceMetaData = $resourceSpaceApi->getResourceFieldData($newImport->getResourceSpaceImageId());
 
-        /** @var \RKW\RkwResourcespace\Utility\FileUtility $fileUtility */
-        $fileUtility = $this->objectManager->get(\RKW\RkwResourcespace\Utility\FileUtility::class);
+        /** @var FileUtility $fileUtility */
+        $fileUtility = GeneralUtility::makeInstance(FileUtility::class);
 
         // Workaround: Are these following lines correctly?
         // Problem: Even not existing images will produce an $resourcePathOfImage and $resourceMetaData
-        // -> But $resourceData seems correctly to be "false", if there is no image available
+        // -> But $resourceData seems correct to be "false", if there is no image available
         if ($resourceData->file_checksum) {
             $requestMessageArray = $fileUtility->createFile($resourcePathOfImage, $resourceData, $resourceMetaData, $newImport);
             $requestMessage = $requestMessageArray['message'];
@@ -168,7 +173,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
             if ($newImport->getFile()) {
                 // set BackendUser (only if logged in)
                 if (is_object($GLOBALS['BE_USER']) && !empty($GLOBALS['BE_USER']->user['uid'])) {
-                    /** @var \RKW\RkwResourcespace\Domain\Model\BackendUser $backendUser */
+                    /** @var BackendUser $backendUser */
                     $backendUser = $this->backendUserRepository->findByIdentifier($GLOBALS['BE_USER']->user['uid']);
                     if ($backendUser) {
                         $newImport->setBackendUser($backendUser);
@@ -196,19 +201,20 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      *
      * @param int $resourceSpaceImageId
      * @return void
-     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\StopActionException
-     * @throws \TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException
+     * @throws StopActionException
+     * @throws IllegalObjectTypeException
      * @throws \TYPO3\CMS\Core\Resource\Exception\ExistingTargetFileNameException
+     * @throws InvalidQueryException|\TYPO3\CMS\Extbase\Persistence\Exception\UnknownObjectException
      */
     protected function overrideMetadataAction(int $resourceSpaceImageId): void
     {
         $this->checkIpIfAccessIsRestricted();
 
         // 1. Get data from api
-        /** @var \RKW\RkwResourcespace\Api\ResourceSpace $resourceSpaceApi */
-        $resourceSpaceApi = $this->objectManager->get(ResourceSpace::class);
+        /** @var ResourceSpace $resourceSpaceApi */
+        $resourceSpaceApi = GeneralUtility::makeInstance(ResourceSpace::class);
 
-        // get resource data (like name, file extension etc)
+        // get resource data (like name, file extension, etc.)
         $resourceData = $resourceSpaceApi->getResourceData($resourceSpaceImageId);
 
         // get resource metadata
@@ -216,19 +222,19 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
 
         // 2. Initialize repos and grab file from TYPO3 DB
-        /** @var \RKW\RkwResourcespace\Domain\Repository\FileRepository $fileRepository */
-        $fileRepository = $this->objectManager->get(FileRepository::class);
+        /** @var FileRepository $fileRepository */
+        $fileRepository = GeneralUtility::makeInstance(FileRepository::class);
 
-        /** @var \RKW\RkwResourcespace\Domain\Repository\FileMetadataRepository $fileMetadataRepository */
-        $fileMetadataRepository = $this->objectManager->get(FileMetadataRepository::class);
+        /** @var FileMetadataRepository $fileMetadataRepository */
+        $fileMetadataRepository = GeneralUtility::makeInstance(FileMetadataRepository::class);
 
-        /** @var \RKW\RkwResourcespace\Domain\Model\File $fileFromDb */
+        /** @var File $fileFromDb */
         $fileFromDb = $fileRepository->findByBeginningOfName($resourceData->ref)->getFirst();
 
 
         if (
             $fileFromDb
-            && strpos($fileFromDb->getIdentifier(), $this->settings['uploadDestination']) === 0
+            && str_starts_with($fileFromDb->getIdentifier(), $this->settings['uploadDestination'])
         ) {
 
             // 3. Do update
@@ -237,8 +243,8 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
             /** @var \RKW\RkwResourcespace\Domain\Model\FileMetadata $fileMetadata */
             $fileMetadata = $fileMetadataRepository->findByUid($fileFromDb->getMetadata()->getUid());
 
-            /** @var \RKW\RkwResourcespace\Utility\FileUtility $fileUtility */
-            $fileUtility = $this->objectManager->get(\RKW\RkwResourcespace\Utility\FileUtility::class);
+            /** @var FileUtility $fileUtility */
+            $fileUtility = GeneralUtility::makeInstance(FileUtility::class);
 
             // override
             $fileUtility->setFileMetadata($fileMetadata, $resourceMetaData);
@@ -248,7 +254,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
             // Log
             $this->getLogger()->log(
-                \TYPO3\CMS\Core\Log\LogLevel::INFO,
+                LogLevelAlias::INFO,
                 sprintf('Meta data of resource %s have been updated.', $fileFromDb->getIdentifier())
             );
 
@@ -271,23 +277,23 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         }
 
         $this->redirect('new', null, null, ['resourceSpaceImageId' => $resourceSpaceImageId]);
-
     }
 
 
     /**
      * Returns logger instance
      *
-     * @return \TYPO3\CMS\Core\Log\Logger
+     * @return Logger
      */
     protected function getLogger(): Logger
     {
-        if (!$this->logger instanceof \TYPO3\CMS\Core\Log\Logger) {
+        if (!$this->logger instanceof Logger) {
             $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         }
 
         return $this->logger;
     }
+
 
     /**
      * @return void
@@ -295,7 +301,7 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      */
     protected function checkIpIfAccessIsRestricted(): void
     {
-// check ip, if access is restricted
+        // check ip, if access is restricted
         if ($this->settings['ipRestriction']) {
             $remoteAddr = filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP);
             if ($_SERVER['HTTP_X_FORWARDED_FOR']) {
@@ -308,12 +314,11 @@ class ImportController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
             $allowedIps = GeneralUtility::trimExplode(',', $this->settings['ipRestriction']);
             if (!in_array($remoteAddr, $allowedIps)) {
                 $this->getLogger()->log(
-                    \TYPO3\CMS\Core\Log\LogLevel::WARNING,
+                    LogLevelAlias::WARNING,
                     sprintf('Access forbidden: Mismatching IP: %s', $remoteAddr)
                 );
                 $this->addFlashMessage(LocalizationUtility::translate('tx_rkwresourcespace_controller_import.invalidIp', 'rkw_resourcespace'));
                 $this->forward('new');
-                //===
             }
         }
     }

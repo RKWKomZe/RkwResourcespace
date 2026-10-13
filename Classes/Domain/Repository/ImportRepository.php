@@ -14,6 +14,8 @@ namespace RKW\RkwResourcespace\Domain\Repository;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Extbase\Persistence\Repository;
+
 /**
  * Class ImportRepository
  *
@@ -22,7 +24,7 @@ namespace RKW\RkwResourcespace\Domain\Repository;
  * @package RKW_Resourcespace
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
  */
-class ImportRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
+class ImportRepository extends Repository
 {
 
 }

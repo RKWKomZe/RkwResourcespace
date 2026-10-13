@@ -6,3 +6,9 @@ services:
 
   RKW\RkwResourcespace\:
     resource: '../Classes/*'
+
+  RKW\RkwResourcespace\Command\MetadataCommand:
+    tags:
+      - name: 'console.command'
+        command: 'rkw_resourcespace:updateMetadata'
+        schedulable: true

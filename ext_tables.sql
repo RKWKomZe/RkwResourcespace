@@ -30,3 +30,13 @@ CREATE TABLE tx_rkwresourcespace_domain_model_import (
 	KEY language (l10n_parent,sys_language_uid)
 
 );
+
+
+#
+# Table structure for table 'sys_file'
+#
+CREATE TABLE sys_file (
+	tx_rkwresourcespace_is_import int(11) unsigned DEFAULT '0' NOT NULL,
+	tx_rkwresourcespace_tstamp_import int(11) unsigned DEFAULT '0' NOT NULL,
+	tx_rkwresourcespace_rkwmedia_image_id int(11) unsigned DEFAULT '0' NOT NULL
+);

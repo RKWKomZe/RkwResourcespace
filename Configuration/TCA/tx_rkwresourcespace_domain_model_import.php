@@ -86,7 +86,6 @@ return [
 		],
 		'endtime' => [
 			'exclude' => true,
-			//'l10n_mode' => 'mergeIfNotBlank',
 			'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.endtime',
 			'config' => [
                 'type'    => 'input',
